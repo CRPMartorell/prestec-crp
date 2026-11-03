@@ -244,3 +244,9 @@ Repositori **trunk-based**: es treballa sobre `main` amb commits petits i atòmi
 3. Generar l'ID amb un comptador persistent o UUID.
 4. Exportació real a `.xlsx` multi-pestanya.
 5. Activar `strict` i netejar dependències.
+
+## 12. Documentació relacionada
+
+- [`documentacion.md`](documentacion.md) — arquitectura objectiu per executar l'aplicació amb Google
+  Apps Script + Sheets + MailApp: dues apps (pública i privada), contracte de dades, JSONP,
+  `google.script.run`, panys, correus, RGPD, fases de migració i estimació.
