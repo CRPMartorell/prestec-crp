@@ -12,3 +12,7 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
+
+# Apps Script (credencials i configuració d'entorn)
+.clasprc.json
+apps-script/.clasp.*.json

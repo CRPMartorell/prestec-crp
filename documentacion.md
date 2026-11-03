@@ -22,6 +22,7 @@
 | Backend de gestió | ⏳ Pendent | CRUD, `LockService`, IDs, auditoria |
 | Correus i recordatoris | ⏳ Pendent | `MailApp` + trigger diari |
 | Estat compartit | ⏳ Pendent | `CrpRepository` + context asíncron (vegeu §18) |
+| Entorn de desenvolupament | ⏳ Pendent | compte personal + `clasp` (vegeu §19) |
 | Proves | ✅ 22 unitàries + 11 E2E | `npm run verify` |
 
 > «Pendent» vol dir **codi per escriure**, no servei per contractar: Apps Script, Sheets i Gmail ja
@@ -665,3 +666,116 @@ pintar la disponibilitat i convidar a triar-ne un altre.
 | Panell | Indicador d'actualització; error no bloquejant; botons desactivats mentre desen |
 
 És un canvi contingut: cap component canvia d'estructura, només guanya estats que avui no té.
+
+---
+
+## 19. Entorns: desenvolupament en un compte personal, producció al centre
+
+### 19.1. Decisió
+
+El desenvolupament es farà en un **compte personal de Google** (el crearà l'usuari) i la producció
+viurà al **compte professional del CRP**. No es toca el compte del centre fins que el codi estigui
+estable.
+
+Motiu: les proves necessiten desplegar, enviar correus i esborrar dades moltes vegades. Fer-ho al
+compte del centre significaria correus reals, dades reals i versions de prova al mateix lloc on
+treballa el personal del CRP.
+
+### 19.2. Què està lligat a cada compte
+
+| | Dev (compte personal) | Prod (compte del centre) |
+| --- | --- | --- |
+| Projecte d'Apps Script | El crea la teva compte | El crea la compte del CRP |
+| Full de càlcul | Còpia amb dades inventades | Full real del CRP |
+| El desplegament s'executa com | Tu | El CRP |
+| Correus | Surten del teu Gmail | Surten del correu del centre |
+| Accés al panell | `ANYONE` / `MYSELF` | `DOMAIN` |
+| Quota de correu | ~100/dia | ~1.500/dia |
+
+El **codi és idèntic** als dos entorns. Només canvien les Propietats del script:
+
+| Propietat | Dev | Prod |
+| --- | --- | --- |
+| `SPREADSHEET_ID` | ID del full de proves | ID del full real |
+| `CORREU_CRP` | el teu correu personal | el correu del CRP |
+| `MODE` | `dev` | `prod` |
+| `ACCES_PANELL` | `ANYONE` | `DOMAIN` |
+
+### 19.3. Estructura prevista del repositori
+
+```
+apps-script/
+├── src/                  # codi compartit: Code.gs, Dades.gs, Correus.gs, Index.html
+├── appsscript.dev.json   # manifest de desenvolupament
+├── appsscript.prod.json  # manifest de producció (access: DOMAIN)
+├── .clasp.dev.json       # scriptId del projecte personal
+└── .clasp.prod.json      # scriptId del projecte del CRP
+```
+
+Els `.clasp.*.json` **no es commitegen** (porten l'scriptId, que no és secret però és entorn).
+Un petit script de desplegament copia `src/` i el manifest corresponent abans de fer `clasp push`,
+perquè no hi hagi dues còpies del codi.
+
+### 19.4. Què no es pot validar en desenvolupament
+
+1. **Accés `DOMAIN`**: la compte personal no és del domini del centre; el desplegament restringit
+   només es pot provar a producció o amb una compte de prova del domini.
+2. **Quotes reals** de Workspace i el comportament sota volum.
+3. **Polítiques de l'administrador**: pot estar restringit publicar web apps o l'accés a l'API
+   d'Apps Script. Cal confirmar-ho abans de la posta en marxa.
+4. **Remitent del correu**: en dev surt de la teva adreça.
+
+### 19.5. Promoció a producció
+
+1. El codi es tanca a `dev` amb les proves en verd.
+2. `clasp push` al projecte de producció (creat per la compte del CRP).
+3. `clasp deploy` amb la descripció del commit.
+4. Es configuren les Propietats del script de producció.
+5. Es verifica la URL `/exec` amb una compte del centre.
+
+No es trasllada la propietat del projecte: es crea des del principi a la compte correcta. Moure un
+projecte d'Apps Script després és possible però arrossega desplegaments i permisos.
+
+### 19.6. Seguretat
+
+- La compte personal **no ha de tenir accés al full real**. Si mai cal, es fa amb un accés temporal
+  i es revoca en acabar.
+- El token de `clasp` viu a `~/.clasprc.json`: mai al repositori, mai en un commit, mai en un log.
+- Per a CI es desa com a secret del repositori (`CLASPRC_JSON`) i es materialitza només durant el job.
+- En acabar el desenvolupament: `clasp logout` i revisió dels permisos atorgats.
+
+### 19.7. Guia completa (pendent de fer junts)
+
+Aquests són els passos que farem quan tinguis la compte. Cap no requereix permisos d'administrador
+de l'ordinador.
+
+**Fase A — Preparar l'entorn de desenvolupament**
+
+1. Crear la compte personal de Google.
+2. Activar l'**Apps Script API** a <https://script.google.com/home/usersettings>.
+3. Instal·lar `clasp` al projecte: `npm i -D @google/clasp`.
+4. `npx clasp login` (s'obre el navegador; cal autoritzar).
+5. Crear el full de proves al Drive: «CRP Préstec — dades (dev)» i copiar-ne l'ID.
+6. `npx clasp create --type standalone --title "CRP Catàleg (dev)"`.
+7. Afegir les Propietats del script (`SPREADSHEET_ID`, `CORREU_CRP`, `MODE=dev`).
+8. Executar la funció `inicialitzarFull()` (la crearé) per generar les pestanyes i dades d'exemple.
+9. `npx clasp push` i `npx clasp deploy`.
+
+**Fase B — Verificar el circuit**
+
+10. Obrir la URL `/exec` i comprovar el catàleg.
+11. Fer una reserva de prova i confirmar que arriba el correu.
+12. Executar el trigger de recordatoris manualment.
+
+**Fase C — Producció**
+
+13. Amb la compte del CRP: activar l'API, `clasp login`, `clasp create` (o crear el projecte a mà).
+14. Full real al Drive del centre, compartit només amb la compte del CRP.
+15. Configurar les Propietats de producció (`SPREADSHEET_ID` real, `MODE=prod`).
+16. `clasp push` + `clasp deploy` amb `access: DOMAIN`.
+17. Desplegar el panell (`dist/private`) com a HtmlService i provar-ho amb una compte del centre.
+
+**Fase D — Automatitzar (opcional)**
+
+18. Afegir el secret `CLASPRC_JSON` al repositori de GitHub.
+19. Workflow que faci `clasp push` i `clasp deploy` en etiquetar una versió.
