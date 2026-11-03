@@ -22,9 +22,13 @@ Dos requisits manen sobre la resta:
 
 Tot viu al navegador: estat a React + `localStorage`, correus simulats com a registre
 (`NotificacioEmail`) i sortida a Google Sheets via CSV. **No hi ha autenticació** i cada navegador
-té la seva pròpia còpia de les dades. El document
-[`public/assets/aistudio/…google_workspace….md`](public/assets/aistudio/disseny_del_proc_s_de_pr_stec_de_material_amb_google_workspace__1__7eacdc73.md)
-és l'especificació de la solució objectiu amb Google Workspace (Sheets + Forms + Apps Script).
+té la seva pròpia còpia de les dades.
+
+La part pública ja està **separada i desplegada** (GitHub Pages) i la privada és un build a part que
+encara no es publica; el backend d'Apps Script no existeix. L'estat detallat, el que queda pendent i
+el model d'estat objectiu són a [`documentacion.md`](documentacion.md) («Estat del projecte» i §18).
+L'especificació original de la solució amb Google Workspace és a
+[`public/assets/aistudio/…google_workspace….md`](public/assets/aistudio/disseny_del_proc_s_de_pr_stec_de_material_amb_google_workspace__1__7eacdc73.md).
 
 ---
 

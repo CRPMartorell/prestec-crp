@@ -4,7 +4,28 @@
 > MailApp** **sense renunciar a la interfície React actual**, dividint el producte en una
 > **aplicació pública** (catàleg anònim) i una **aplicació privada** (gestió interna del CRP).
 >
-> Estat: proposta. No hi ha codi d'Apps Script al repositori encara.
+> Estat: **part pública desplegada i separada del panell**; el backend d'Apps Script encara no
+> existeix. Última revisió: novembre de 2026.
+
+---
+
+## Estat del projecte (novembre 2026)
+
+| Peça | Estat | Detall |
+| --- | --- | --- |
+| Catàleg públic (UI) | ✅ Fet | `index.html` → `AppPublic`, desplegat a `crpmartorell.github.io/prestec-crp/` |
+| Separació públic / privat | ✅ Fet | `admin.html` → `AppPrivate`; `build:public` / `build:private`; `check:bundle` |
+| Publicació automàtica | ✅ Fet | GitHub Actions: lint + 22 tests + build públic + guardia + deploy |
+| Panell intern (UI) | ✅ Fet (codi) | `AdminDashboard`, encara recolzat en `localStorage` |
+| Desplegament del panell | ⏳ Pendent | HtmlService amb `access: DOMAIN` (necessita el backend) |
+| Backend del catàleg | ⏳ Pendent | `Code.gs` públic: `doGet`, projecció de camps, JSONP |
+| Backend de gestió | ⏳ Pendent | CRUD, `LockService`, IDs, auditoria |
+| Correus i recordatoris | ⏳ Pendent | `MailApp` + trigger diari |
+| Estat compartit | ⏳ Pendent | `CrpRepository` + context asíncron (vegeu §18) |
+| Proves | ✅ 22 unitàries + 11 E2E | `npm run verify` |
+
+> «Pendent» vol dir **codi per escriure**, no servei per contractar: Apps Script, Sheets i Gmail ja
+> existeixen al Workspace del centre. Les fases concretes són a §12.
 
 ---
 
@@ -40,7 +61,7 @@ de la comunicació (vegeu §6).
 | --- | --- | --- |
 | **Qui l'usa** | Qualsevol docent o centre, sense compte | Personal del CRP |
 | **Què fa** | Consultar catàleg i disponibilitat; enviar sol·licitud | Validar, denegar, inventari, correus, exportar |
-| **On s'allotja** | Hosting estàtic (GitHub Pages / Netlify / Vercel) | Apps Script (HtmlService) |
+| **On s'allotja** | GitHub Pages (fet) | Apps Script (HtmlService), pendent |
 | **Com parla amb les dades** | API de només lectura via **JSONP** | `google.script.run` (natiu, mateix origen) |
 | **Autenticació** | Cap (anònima per disseny) | La del desplegament: `DOMAIN` |
 | **Codi que s'envia al navegador** | Només catàleg i formulari | Només panell intern |
@@ -365,34 +386,36 @@ Tres implementacions:
 `CrpContext` passa a rebre el repositori per prop (`<CrpProvider repository={repo}>`) i a gestionar
 `loading`, `error` i accions asíncrones. Els components no canvien: segueixen consumint `useCrp()`.
 
-### 10.2. Dues entrades de Vite
+### 10.2. Dues entrades de Vite (implementat)
 
 ```
-src/main.public.tsx    → AppPublica   (Header + PublicCatalog + modal)
-src/main.private.tsx   → AppPrivada   (AdminDashboard)
+index.html  → src/main.public.tsx  → AppPublic   (Header + PublicCatalog + Footer)
+admin.html  → src/main.private.tsx → AppPrivate  (PrivateHeader + AdminDashboard + Footer)
 ```
+
+Cada pàgina té el seu punt d'entrada i el seu HTML; `vite.config.ts` tria les entrades segons el
+mode:
 
 ```ts
-// vite.config.ts
-export default defineConfig(({ mode }) => ({
-  build: {
-    outDir: mode === 'private' ? 'dist/private' : 'dist/public',
-    rollupOptions: {
-      input: mode === 'private' ? 'src/main.private.tsx' : 'src/main.public.tsx',
-    },
-  },
-}));
+const input =
+  app === 'public' ? { main: 'index.html' }
+  : app === 'private' ? { admin: 'admin.html' }
+  : { main: 'index.html', admin: 'admin.html' };
+
+build: { outDir: `dist/${app}`, rollupOptions: { input } }
 ```
 
-Scripts: `npm run build:public`, `npm run build:private`. Com que cada entrada importa només els seus
-components, **el bundle públic no conté el codi del panell** ni a l'inrevés.
+Scripts: `npm run build:public` → `dist/public/`, `npm run build:private` → `dist/private/`.
+Com que cada entrada importa només els seus components, **el bundle públic no conté el codi del
+panell** ni a l'inrevés. `npm run check:bundle` ho verifica sobre el bundle generat i la CI el
+executa abans de publicar.
 
 ### 10.3. On s'executa cada build
 
-- **Públic** → GitHub Pages / Netlify. Estàtic, cachejable, sense servidor.
+- **Públic** → GitHub Pages (fet), desplegat per CI en cada push a `main`.
 - **Privat** → es puja com a `Index.html` + `App.html` + `Styles.html` dins del projecte d'Apps
-  Script, amb el mateix `vite-plugin-singlefile` perquè no hi hagi rutes `/assets/*` que HtmlService
-  no sap servir.
+  Script, amb `vite-plugin-singlefile` perquè no hi hagi rutes `/assets/*` que HtmlService
+  no sap servir (pendent).
 
 > Dins d'HtmlService no hi ha `localStorage` ni descàrregues via Blob. Per això el panell no
 > persisteix res en local (tot ve del servidor) i l'exportació CSV es genera **al servidor**, es desa a
@@ -456,31 +479,38 @@ El repositori ja genera dos artefactes independents:
 «Inventari de Materials», «Executar Trigger»…), i la CI l'executa abans de publicar. La pàgina
 `admin.html` porta `noindex, nofollow`.
 
-### On allotjar la part privada (mentre no hi ha backend)
+### On allotjar la part privada
+
+Decisió presa: **HtmlService amb `access: DOMAIN`**, dins del mateix projecte d'Apps Script que
+conté el backend de gestió. Així l'autenticació és la del compte del centre (sense cap proveïdor
+extern), `Session.getActiveUser()` identifica qui fa cada canvi i desapareix la necessitat de
+mantenir un segon hosting.
+
+Requisit: el backend ha d'existir abans de publicar el panell, perquè dins d'HtmlService no hi ha
+`localStorage` i tot l'estat ha de venir del servidor (§18).
+
+Alternatives descartades o ajornades:
 
 | Opció | Cost | Autenticació | Valoració |
 | --- | --- | --- | --- |
-| **Cloudflare Pages + Access** | Gratis fins a 50 usuaris | Correu (OTP) o Google | **Recomanada** com a pas intermedi |
-| Apps Script HtmlService (`DOMAIN`) | Gratis | Compte del centre | Objectiu final, però requereix el backend |
+| **Apps Script HtmlService (`DOMAIN`)** | Gratis | Compte del centre | **Decisió actual** |
+| Cloudflare Pages + Access | Gratis fins a 50 usuaris | Correu (OTP) o Google | Només si cal ensenyar el panell abans que hi hagi backend |
 | Netlify / Vercel amb contrasenya | Pla de pagament | Contrasenya compartida | Evitar: sense traçabilitat per usuari |
 | GitHub Pages | Gratis | Cap | **No serveix**: no permet restringir l'accés |
-
-Amb Cloudflare Access, el panell queda darrere d'un inici de sessió real (es pot limitar a les
-adreces `@xtec.cat` del CRP) i es pot revocar l'accés per persona. És la manera de tenir el panell
-privat avui, sense esperar el backend.
 
 ---
 
 ## 12. Pla de migració per fases
 
-| Fase | Què es fa | Criteri de fet |
-| --- | --- | --- |
-| **F0** | Extreure `CrpRepository` i `LocalRepository`; `CrpContext` asíncron | Els 22 tests unitaris i 11 E2E segueixen en verd |
-| **F1** | `Code.gs` públic: `doGet` + catàleg + disponibilitat; `PublicRepository` amb JSONP | L'app pública llegeix dades reals del full |
-| **F2** | `Code.gs` privat: CRUD + `LockService` + IDs; `PrivateRepository` | Crear/validar reserves des del panell |
-| **F3** | Correus i triggers (`Correus.gs`) | Un correu real arriba a la bústia del CRP |
-| **F4** | `Registre`, quotes, caché, reintents | Cap error no controlat en una setmana d'ús |
-| **F5** | Retallada: `localStorage` fora de producció | El build públic no conté dades ni codi d'escriptura |
+| Fase | Què es fa | Estat | Criteri de fet |
+| --- | --- | --- | --- |
+| **F0a** | Dues entrades, dos builds, guardia del bundle | ✅ Fet | `admin.html` fora del bundle públic i `check:bundle` en verd |
+| **F0b** | `CrpRepository` + `LocalRepository`; `CrpContext` asíncron | ⏳ Pendent | Els 22 tests unitaris i 11 E2E segueixen en verd |
+| **F1** | `Code.gs` públic: `doGet` + catàleg + disponibilitat; `PublicRepository` amb JSONP | ⏳ Pendent | L'app pública llegeix dades reals del full |
+| **F2** | `Code.gs` privat: CRUD + `LockService` + IDs; `PrivateRepository` | ⏳ Pendent | Crear/validar reserves des del panell |
+| **F3** | Correus i triggers (`Correus.gs`) | ⏳ Pendent | Un correu real arriba a la bústia del CRP |
+| **F4** | `Registre`, quotes, caché, reintents | ⏳ Pendent | Cap error no controlat en una setmana d'ús |
+| **F5** | Retallada: `localStorage` fora de producció | ⏳ Pendent | El build públic no conté dades ni codi d'escriptura |
 
 Cada fase és un commit independent, amb les seves proves.
 
@@ -529,18 +559,21 @@ Cada fase és un commit independent, amb les seves proves.
 
 | Bloc | Esforç |
 | --- | --- |
-| F0 · Repositori + context asíncron | 1–1,5 dies |
+| F0a · Separació de builds i guardia | ✅ fet |
+| F0b · Repositori + context asíncron | 1–1,5 dies |
 | F1 · API pública + JSONP | 1 dia |
 | F2 · API privada + panys | 1,5 dies |
 | F3 · Correus i triggers | 1 dia |
 | F4 · Auditoria, caché, reintents | 0,5 dies |
 | F5 · Retallada i proves | 1 dia |
-| **Total** | **6–7 dies** |
+| **Total pendent** | **6–7 dies** |
 
 ---
 
 ## 17. Resum
 
+- **Fet**: catàleg públic desplegat a GitHub Pages, panell separat en un segon build (`admin.html`)
+  que no arriba mai al navegador del ciutadà, i guardia automàtica a la CI.
 - La UI **no es toca**: només canvia la capa de dades, darrere d'una interfície `CrpRepository`.
 - **Dues apps**: catàleg estàtic + API pública de només lectura (JSONP); panell HtmlService + API
   privada amb `google.script.run`.
@@ -549,3 +582,86 @@ Cada fase és un commit independent, amb les seves proves.
 - La seguretat ve del **desplegament** (públic anònim vs. domini) i de la **projecció de camps**, no
   de confiar en el client.
 - Els 22 tests unitaris i 11 E2E actuals continuen sent la xarxa de seguretat de la migració.
+
+---
+
+## 18. Gestió de l'estat: d'on venim i cap on anem
+
+### 18.1. Com funciona ara
+
+- Tot l'estat viu a `CrpContext` amb `useState`: `materials`, `torns`, `reserves`, `notificacions`.
+- Es persisteix al **`localStorage` del navegador** (`crp_materials_v1`, `crp_reserves_v1`,
+  `crp_notificacions_v1`) dins d'un `useEffect` que s'executa a cada canvi.
+- Les accions són **síncrones**: `crearReserva()` retorna l'objecte a l'instant i la UI el pinta
+  sense esperar.
+- Cada navegador té la seva còpia: dues persones del CRP no veuen el mateix.
+- No hi ha estats de **càrrega** ni d'**error**: la UI assumeix que tot és immediat i que mai falla.
+- `restablirDadesPerDefecte()` esborra el `localStorage` i torna a les dades d'exemple.
+
+### 18.2. Per què això no encaixa amb Apps Script
+
+| Supòsit actual | Realitat a Apps Script |
+| --- | --- |
+| L'estat és local i immediat | Cada acció és una crida RPC de 100–800 ms |
+| Ningú més toca les dades | Diverses persones comparteixen el mateix full |
+| Res no falla | Quota de correu, bloqueig ocupat, xarxa intermitent |
+| Es pot guardar al navegador | `localStorage` està bloquejat dins d'HtmlService |
+| Un sol usuari per sessió | Cal saber **qui** fa cada canvi (`Session.getActiveUser()`) |
+
+### 18.3. Model objectiu
+
+1. **`CrpRepository`** (vegeu §10.1): interfície única, tres implementacions
+   (`LocalRepository` per a desenvolupament i tests, `PublicRepository` amb JSONP,
+   `PrivateRepository` amb `google.script.run`).
+2. **Context asíncron**: `CrpProvider` rep el repositori per prop i exposa, a més de les dades,
+   `carregant`, `error` i `recarregar()`. Les accions retornen `Promise`.
+3. **Escriptures pessimistes**: no es pinta el canvi fins que el servidor confirma. Reservar un torn
+   és una operació exclusiva; una actualització optimista amagaria el conflicte.
+4. **Lectures amb caché**: el catàleg públic es pot servir 60 s des de `CacheService`; el panell
+   refresca en entrar i després de cada escriptura.
+
+### 18.4. Cicle d'una acció (reservar un torn)
+
+```
+UI (botó desactivat, spinner)
+  └─ context.crearReserva(dades)
+       └─ PrivateRepository/PublicRepository.crearReserva()
+            └─ servidor: LockService → comprova torn → escriu fila → envia correu
+                 └─ resposta { ok, reserva } | error «torn ocupat»
+       └─ estat: afegeix la reserva  |  error: mostra missatge i refresca disponibilitat
+  └─ UI (confirmació amb codi)
+```
+
+L'error «aquest torn acaba d'ocupar-se» **no és un cas excepcional**: el formulari ha de tornar a
+pintar la disponibilitat i convidar a triar-ne un altre.
+
+### 18.5. Concurrència i conflictes
+
+- **Servidor**: `LockService` al voltant de cada escriptura (§7) i verificació del torn dins del
+  pany; l'ID de reserva surt d'un comptador a `Config`.
+- **Client**: si la resposta és «ocupat», refresca i no reintenta automàticament.
+- **Panell**: dues persones editant la mateixa reserva → guanya l'última escriptura, però queda
+  rastre a `Registre` (qui i quan).
+
+### 18.6. Què cal tocar al codi (F0b)
+
+| Fitxer | Canvi |
+| --- | --- |
+| `src/data/CrpRepository.ts` | Nou: la interfície i els tipus de resposta |
+| `src/data/localRepository.ts` | Extret de `CrpContext` (avui és el propi context) |
+| `src/data/publicRepository.ts` | JSONP contra el script públic |
+| `src/data/privateRepository.ts` | `google.script.run` prometificat |
+| `src/context/CrpContext.tsx` | Repositori per prop, estat `carregant`/`error`, accions async |
+| `PublicCatalog`, `ReservationModal`, `AdminDashboard` | Estats de càrrega, error i reintent |
+| `src/test/*` | Test de contracte entre repositoris; mocks asíncrons |
+| `e2e/*` | Esperar l'estat de càrrega abans d'actuar |
+
+### 18.7. Impacte visible a la UI
+
+| Pantalla | Què s'hi afegeix |
+| --- | --- |
+| Catàleg | Esquelet de càrrega; missatge si el servidor no respon; reintent |
+| Formulari | Botó «Enviant…» desactivat; error de torn ocupat amb refresc |
+| Panell | Indicador d'actualització; error no bloquejant; botons desactivats mentre desen |
+
+És un canvi contingut: cap component canvia d'estructura, només guanya estats que avui no té.
