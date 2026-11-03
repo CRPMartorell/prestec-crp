@@ -1,0 +1,6 @@
+{
+  "name": "Préstec CRP - Centre de Recursos Pedagògics",
+  "description": "Aplicació de catàleg públic anònim i gestió interna de préstecs de maletes pedagògiques i equipament del CRP, amb suport per a 6 torns escolars, reserves i Google Workspace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
