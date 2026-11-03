@@ -443,6 +443,32 @@ qui fa cada canvi.
 4. Front públic publicat apuntant a la URL del script públic.
 5. Panell intern: pujar el build privat i desplegar.
 
+### On es publica cada build (implementat)
+
+El repositori ja genera dos artefactes independents:
+
+| Build | Comanda | Sortida | Contingut |
+| --- | --- | --- | --- |
+| Públic | `npm run build:public` | `dist/public/` | `index.html` + catàleg |
+| Privat | `npm run build:private` | `dist/private/` | `admin.html` + panell |
+
+`npm run check:bundle` falla si el bundle públic conté textos del panell («Gestió Interna»,
+«Inventari de Materials», «Executar Trigger»…), i la CI l'executa abans de publicar. La pàgina
+`admin.html` porta `noindex, nofollow`.
+
+### On allotjar la part privada (mentre no hi ha backend)
+
+| Opció | Cost | Autenticació | Valoració |
+| --- | --- | --- | --- |
+| **Cloudflare Pages + Access** | Gratis fins a 50 usuaris | Correu (OTP) o Google | **Recomanada** com a pas intermedi |
+| Apps Script HtmlService (`DOMAIN`) | Gratis | Compte del centre | Objectiu final, però requereix el backend |
+| Netlify / Vercel amb contrasenya | Pla de pagament | Contrasenya compartida | Evitar: sense traçabilitat per usuari |
+| GitHub Pages | Gratis | Cap | **No serveix**: no permet restringir l'accés |
+
+Amb Cloudflare Access, el panell queda darrere d'un inici de sessió real (es pot limitar a les
+adreces `@xtec.cat` del CRP) i es pot revocar l'accés per persona. És la manera de tenir el panell
+privat avui, sense esperar el backend.
+
 ---
 
 ## 12. Pla de migració per fases

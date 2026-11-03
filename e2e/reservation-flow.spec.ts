@@ -28,8 +28,11 @@ test.describe('Flux complet de reserva', () => {
     const idReserva = codi!.match(/RES-\d{4}-\d{3}/)![0];
     await page.getByRole('button', { name: 'Tancar i tornar al catàleg' }).click();
 
-    // 4. El CRP veu la sol·licitud al panell intern
-    await page.getByRole('banner').getByRole('button', { name: /Gestió Interna CRP/ }).click();
+    // 4. El CRP veu la sol·licitud al panell intern (altra pàgina, altre desplegament)
+    await page.goto('/admin.html');
+    await expect(
+      page.getByRole('heading', { name: 'Panell de Gestió del Personal del CRP' })
+    ).toBeVisible();
     const fila = page.getByRole('row').filter({ hasText: idReserva });
     await expect(fila).toBeVisible();
     await expect(fila).toContainText('Pendent de Validació');

@@ -34,10 +34,13 @@ jobs:
       - name: Proves unitàries
         run: npm test
 
-      - name: Build
-        run: npm run build
+      - name: Build (només catàleg públic)
+        run: npm run build:public
         env:
           VITE_BASE: /prestec-crp/
+
+      - name: Comprova que el bundle públic no inclou el panell
+        run: npm run check:bundle
 
       - uses: actions/configure-pages@v5
         with:
@@ -45,7 +48,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: dist/public
 
   deploy:
     needs: build

@@ -7,8 +7,6 @@ interface CrpContextType {
   torns: TornPedagogic[];
   reserves: Reserva[];
   notificacions: NotificacioEmail[];
-  activeView: 'public' | 'crp-admin';
-  setActiveView: (view: 'public' | 'crp-admin') => void;
   crearReserva: (novaReserva: Omit<Reserva, 'idReserva' | 'estatReserva' | 'dataCreacio'>) => Reserva;
   validarReserva: (idReserva: string, estat: EstatReserva, dataHoraRecollida?: string) => void;
   afegirMaterial: (material: Material) => void;
@@ -60,8 +58,6 @@ export const CrpProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     ];
   });
-
-  const [activeView, setActiveView] = useState<'public' | 'crp-admin'>('public');
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.MATERIALS, JSON.stringify(materials));
@@ -321,8 +317,6 @@ export const CrpProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         torns,
         reserves,
         notificacions,
-        activeView,
-        setActiveView,
         crearReserva,
         validarReserva,
         afegirMaterial,

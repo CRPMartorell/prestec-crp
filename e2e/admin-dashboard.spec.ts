@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.getByRole('banner').getByRole('button', { name: /Gestió Interna CRP/ }).click();
+  // El panell viu en una pàgina i un desplegament separats del catàleg.
+  await page.goto('/admin.html');
   await expect(
     page.getByRole('heading', { name: 'Panell de Gestió del Personal del CRP' })
   ).toBeVisible();
@@ -14,7 +14,7 @@ test.describe('Panell intern del CRP', () => {
     await expect(page.getByRole('row').filter({ hasText: 'RES-2026-002' })).toContainText(
       'jrius@iesbrossa.cat'
     );
-    await expect(page.getByRole('banner').getByRole('button', { name: /Gestió Interna CRP/ })).toContainText('2');
+    await expect(page.getByRole('banner')).toContainText('2 pendents');
 
     await page.getByRole('button', { name: 'Concedida', exact: true }).click();
     await expect(page.getByRole('row')).toHaveCount(4); // capçalera + 3 concedides

@@ -10,6 +10,9 @@ test.describe('Catàleg públic', () => {
     await expect(page.getByRole('button', { name: 'Reservar aquest Material' })).toHaveCount(10);
     // Cap dada personal al catàleg públic
     await expect(page.getByText('msoler@escolaeldrac.cat')).toHaveCount(0);
+    // Cap accés al panell intern: no existeix al bundle públic
+    await expect(page.getByText(/Gestió Interna/)).toHaveCount(0);
+    await expect(page.getByText(/Panell de Gestió/)).toHaveCount(0);
   });
 
   test('cerca pel nom del material', async ({ page }) => {

@@ -32,7 +32,7 @@ té la seva pròpia còpia de les dades. El document
 
 | Peça | Versió | Notes |
 | --- | --- | --- |
-| React | 19 | Sense router; la vista és estat (`public` \| `crp-admin`) |
+| React | 19 | Dues pàgines (`index.html`, `admin.html`), sense router |
 | TypeScript | 7 | `tsc --noEmit` com a lint; **no** té `strict` activat |
 | Vite | 8 | `@vitejs/plugin-react`, Tailwind v4 via `@tailwindcss/vite` |
 | Vitest | 5 | Entorn `jsdom`, pool `threads` |
@@ -43,14 +43,17 @@ té la seva pròpia còpia de les dades. El document
 
 ```bash
 npm install          # dependències
-npm run dev          # http://localhost:3000
-npm run build        # dist/
+npm run dev          # http://localhost:3000 (catàleg) i /admin.html (panell)
+npm run build        # build de les dues pàgines (dist/)
+npm run build:public # només catàleg -> dist/public/
+npm run build:private# només panell  -> dist/private/
+npm run check:bundle # comprova que dist/public no contingui el panell
 npm run preview      # previsualitza el build
 npm run lint         # tsc --noEmit
 npm test             # Vitest (22 proves)
 npm run test:watch   # Vitest en mode watch
 npm run test:e2e     # Playwright (11 proves)
-npm run verify       # lint + test + build
+npm run verify       # lint + test + build:public + check:bundle
 ```
 
 La primera vegada cal instal·lar el navegador d'E2E:
@@ -89,19 +92,30 @@ Particularitats que afecten les comandes:
 
 ## 5. Arquitectura
 
+El projecte és **una sola base de codi amb dues aplicacions i dos desplegaments**:
+
 ```
-index.html
-└─ src/main.tsx
-   └─ src/App.tsx ...................... CrpProvider + Header + vista + peu
-      ├─ src/context/CrpContext.tsx .... TOT l'estat i les regles de negoci
-      ├─ src/components/Header.tsx ..... marca, canvi de vista, comptador de pendents
-      ├─ src/components/public/ ........ capa pública (anònima)
-      │  ├─ PublicCatalog.tsx .......... cerca, filtres, graella, estat buit
-      │  ├─ MaterialCard.tsx ........... fitxa, contingut desplegable, tira de 6 torns
-      │  └─ ReservationModal.tsx ....... formulari de reserva + confirmació
-      └─ src/components/admin/ ......... capa privada (CRP)
-         └─ AdminDashboard.tsx ......... 5 pestanyes: reserves, inventari, torns,
-                                          automatitzacions, estructura Sheets
+index.html ──► src/main.public.tsx ──► AppPublic ──► Header + PublicCatalog + Footer
+admin.html ──► src/main.private.tsx ─► AppPrivate ─► PrivateHeader + AdminDashboard + Footer
+
+Compartit per les dues:
+  src/context/CrpContext.tsx .... estat i regles de negoci
+  src/types/crp.ts .............. tipus del domini
+  src/data/defaultData.ts ....... dades d'exemple
+  src/components/Footer.tsx ..... peu comú
+```
+
+Regla dura: **`AppPublic` no pot importar res de `src/components/admin/` ni
+`PrivateHeader`**. El bundle públic es comprova a `npm run check:bundle` i a la CI.
+
+```
+src/components/public/ ... capa pública (anònima)
+  PublicCatalog.tsx ......... cerca, filtres, graella, estat buit
+  MaterialCard.tsx .......... fitxa, contingut desplegable, tira de 6 torns
+  ReservationModal.tsx ...... formulari de reserva + confirmació
+src/components/admin/ ...... capa privada (CRP)
+  AdminDashboard.tsx ........ 5 pestanyes: reserves, inventari, torns,
+                              automatitzacions, estructura Sheets
 ```
 
 Fitxers de suport:
@@ -114,7 +128,7 @@ Fitxers de suport:
 
 ### Estat i accions (`CrpContext`)
 
-`materials`, `torns`, `reserves`, `notificacions`, `activeView` i
+`materials`, `torns`, `reserves`, `notificacions` i
 `crearReserva`, `validarReserva`, `afegirMaterial`, `actualitzarMaterial`, `eliminarMaterial`,
 `executarTriggerRecordatoriDiari`, `esborrarNotificacions`, `restablirDadesPerDefecte`,
 `getDisponibilitatMaterialTorn`, `exportarCSVSheets`.
@@ -222,8 +236,9 @@ Repositori **trunk-based**: es treballa sobre `main` amb commits petits i atòmi
 
 ## 10. Limitacions conegudes i deute tècnic
 
-1. **Sense backend ni autenticació**: les dades són per navegador; qualsevol pot obrir la vista
-   interna. Imprescindible abans de produir.
+1. **Sense backend ni autenticació**: les dades són per navegador i el panell no té login propi.
+   El bundle públic ja no conté el panell, però el desplegament privat necessita una capa
+   d'autenticació (vegeu `documentacion.md` §11).
 2. **ID de reserva** calculat amb `reserves.length + 1` → pot col·lisionar després d'esborrar o
    restablir.
 3. **Les setmanes de maquinària no es validen contra solapaments**: es pot reservar dues vegades la

@@ -32,7 +32,6 @@ describe('CrpContext', () => {
     expect(crp.materials).toHaveLength(10);
     expect(crp.torns).toHaveLength(6);
     expect(crp.reserves).toHaveLength(5);
-    expect(crp.activeView).toBe('public');
   });
 
   it('crea una reserva pendent, amb codi i data de retorn del torn', () => {
