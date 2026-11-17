@@ -1,4 +1,4 @@
-﻿# Préstec CRP
+# Préstec CRP
 
 Aplicació del **Centre de Recursos Pedagògics** per gestionar el préstec de maletes pedagògiques i
 maquinària als centres educatius.
@@ -38,10 +38,14 @@ npm run dev:web     # només Vite
 
 ### Si alguna cosa falla
 
+- **`ERR_CONNECTION_REFUSED` al navegador**: vol dir que ningú no està escoltant. Mira la terminal on
+  has llançat el projecte: si hi ha un error, això és la causa. Comprova-ho amb `npm run doctor`.
+  Obre sempre `http://127.0.0.1:3000/` (no `localhost`: pot resoldre's a IPv6 i no hi escolta).
+- **`npm : no se puede cargar npm.ps1`** (PowerShell amb polítiques restrictives): usa
+  `npm.cmd run local`, o bé fes doble clic a **`local.cmd`**, que arrenca sense passar per npm.
 - **«No trobo PHP al PATH»**: instal·la PHP i torna a provar. A Windows pot ser
   `%LOCALAPPDATA%\Programs\php`; a macOS `brew install php`; a Debian/Ubuntu `sudo apt install php php-sqlite3`.
-- **Port 3000 o 8080 ocupat**: tanca el procés anterior o canvia el port a `scripts/dev.mjs` i a
-  `vite.config.ts`.
+- **Port 3000 o 8080 ocupat**: l'error ho diu i mostra quina comanda per veure quin procés és.
 - **La base és a `server/var/crp.sqlite`**. Per començar de zero: esborra el fitxer i torna a fer
   `npm run local` (o `npm run setup -- --fresh`).
 
@@ -49,6 +53,7 @@ npm run dev:web     # només Vite
 
 ```bash
 npm run local       # API + web per desenvolupar
+npm run doctor      # comprova node, php, ports i base de dades
 npm run setup       # crea/actualitza la base i l'usuari del CRP
 npm test            # proves unitàries (Vitest)
 npm run test:e2e    # proves de navegador (Playwright) contra PHP real

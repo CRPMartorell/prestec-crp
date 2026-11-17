@@ -6,6 +6,7 @@
   "scripts": {
     "local": "node scripts/dev.mjs",
     "dev": "node scripts/dev.mjs",
+    "doctor": "node scripts/doctor.mjs",
     "dev:web": "vite --port=3000 --host=127.0.0.1",
     "dev:api": "php -S 127.0.0.1:8080 -t server/public server/public/index.php",
     "setup": "php server/tools/install.php",
