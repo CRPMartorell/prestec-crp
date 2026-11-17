@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { login, reiniciarBd } from './helpers';
 
 test.beforeEach(async ({ page }) => {
+  await reiniciarBd(page);
   // El panell viu en una pàgina i un desplegament separats del catàleg.
   await page.goto('/admin.html');
-  await expect(
-    page.getByRole('heading', { name: 'Panell de Gestió del Personal del CRP' })
-  ).toBeVisible();
+  await login(page);
 });
 
 test.describe('Panell intern del CRP', () => {

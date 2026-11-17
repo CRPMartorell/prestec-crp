@@ -34,13 +34,10 @@ export const AdminDashboard: React.FC = () => {
     torns,
     notificacions,
     validarReserva,
-    afegirMaterial,
-    actualitzarMaterial,
+    desarMaterial,
     eliminarMaterial,
-    executarTriggerRecordatoriDiari,
-    esborrarNotificacions,
-    restablirDadesPerDefecte,
-    exportarCSVSheets,
+    executarRecordatoris,
+    exportarCsv,
   } = useCrp();
 
   const [activeTab, setActiveTab] = useState<'reserves' | 'materials' | 'torns' | 'automations' | 'sheets'>('reserves');
@@ -79,27 +76,26 @@ export const AdminDashboard: React.FC = () => {
     setDataHoraRecollidaInput(r.dataHoraRecollida || 'Dilluns vinent de 09:30 a 13:00 h');
   };
 
-  const handleConfirmValidation = (estat: EstatReserva) => {
+  const handleConfirmValidation = async (estat: EstatReserva) => {
     if (!reservaPerValidar) return;
-    validarReserva(reservaPerValidar.idReserva, estat, dataHoraRecollidaInput);
+    const id = reservaPerValidar.idReserva;
+    const recollida = dataHoraRecollidaInput;
     setReservaPerValidar(null);
+    await validarReserva(id, estat, recollida);
   };
 
-  const handleSaveMaterial = (e: React.FormEvent) => {
+  const handleSaveMaterial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMaterial) return;
-    if (isNewMaterial) {
-      afegirMaterial(editingMaterial);
-    } else {
-      actualitzarMaterial(editingMaterial);
-    }
+    const material = editingMaterial;
     setEditingMaterial(null);
+    await desarMaterial(material);
   };
 
-  const handleRunDailyTrigger = () => {
-    const res = executarTriggerRecordatoriDiari();
+  const handleRunDailyTrigger = async () => {
+    const res = await executarRecordatoris();
     setTriggerResult(
-      `Trigger executat: S'han revisat ${res.processades} reserves actives i s'han enviat ${res.notificacionsEnviades} recordatoris de devolució (2 dies abans).`
+      `Trigger executat: S'han revisat ${res.processades} reserves actives i s'han enviat ${res.enviades} recordatoris de devolució (2 dies abans).`
     );
     setTimeout(() => setTriggerResult(null), 6000);
   };
@@ -218,19 +214,11 @@ function enviarRecordatoriDevolucio() {
 
         <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={exportarCSVSheets}
+            onClick={() => void exportarCsv()}
             className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-2 border border-slate-700 transition-colors"
           >
             <Download className="w-4 h-4 text-emerald-400" />
             <span>Exportar CSV (Google Sheets)</span>
-          </button>
-
-          <button
-            onClick={restablirDadesPerDefecte}
-            title="Restablir dades inicials"
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
-          >
-            <RotateCcw className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -430,7 +418,7 @@ function enviarRecordatoriDevolucio() {
                                     <span>Aprovar</span>
                                   </button>
                                   <button
-                                    onClick={() => validarReserva(reserva.idReserva, 'Denegada')}
+                                    onClick={() => void validarReserva(reserva.idReserva, 'Denegada')}
                                     className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg font-semibold transition-colors"
                                   >
                                     Denegar
@@ -440,7 +428,7 @@ function enviarRecordatoriDevolucio() {
 
                               {isGranted && (
                                 <button
-                                  onClick={() => validarReserva(reserva.idReserva, 'Finalitzada')}
+                                  onClick={() => void validarReserva(reserva.idReserva, 'Finalitzada')}
                                   className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg font-bold transition-colors"
                                 >
                                   Retornat / Finalitzar
@@ -565,7 +553,7 @@ function enviarRecordatoriDevolucio() {
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => eliminarMaterial(mat.id)}
+                            onClick={() => void eliminarMaterial(mat.id)}
                             className="p-1.5 text-slate-500 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
                             title="Eliminar material"
                           >
@@ -661,7 +649,7 @@ function enviarRecordatoriDevolucio() {
             </div>
 
             <button
-              onClick={handleRunDailyTrigger}
+              onClick={() => void handleRunDailyTrigger()}
               className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-xs transition-colors shrink-0"
             >
               <Play className="w-4 h-4" />
@@ -682,14 +670,6 @@ function enviarRecordatoriDevolucio() {
                 <h4 className="font-bold text-slate-900 text-sm">Registre de Notificacions per Correu Enviades</h4>
                 <p className="text-xs text-slate-500">Historial dels correus generats per les automatitzacions</p>
               </div>
-              {notificacions.length > 0 && (
-                <button
-                  onClick={esborrarNotificacions}
-                  className="text-xs text-slate-400 hover:text-slate-600"
-                >
-                  Netejar registre
-                </button>
-              )}
             </div>
 
             {notificacions.length > 0 ? (
@@ -830,7 +810,7 @@ function enviarRecordatoriDevolucio() {
 
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={exportarCSVSheets}
+                onClick={() => void exportarCsv()}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-xs transition-colors"
               >
                 <Download className="w-4 h-4" />
@@ -885,7 +865,7 @@ function enviarRecordatoriDevolucio() {
               </button>
               <button
                 type="button"
-                onClick={() => handleConfirmValidation('Concedida')}
+                onClick={() => void handleConfirmValidation('Concedida')}
                 className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" />

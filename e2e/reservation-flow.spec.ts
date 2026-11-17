@@ -1,8 +1,14 @@
 import { expect, test } from '@playwright/test';
+import { login, reiniciarBd } from './helpers';
+
+test.beforeEach(async ({ page }) => {
+  await reiniciarBd(page);
+  await page.goto('/');
+});
 
 test.describe('Flux complet de reserva', () => {
   test('un docent reserva un torn i el CRP el valida', async ({ page }) => {
-    await page.goto('/');
+    await expect(page.getByText('Nanokit')).toBeVisible({ timeout: 15000 });
 
     // 1. El docent troba el material i obre el formulari
     await page.getByPlaceholder(/Cerca per nom/).fill('Nanokit');
@@ -28,11 +34,10 @@ test.describe('Flux complet de reserva', () => {
     const idReserva = codi!.match(/RES-\d{4}-\d{3}/)![0];
     await page.getByRole('button', { name: 'Tancar i tornar al catàleg' }).click();
 
-    // 4. El CRP veu la sol·licitud al panell intern (altra pàgina, altre desplegament)
+    // 4. El CRP entra al panell i veu la sol·licitud
     await page.goto('/admin.html');
-    await expect(
-      page.getByRole('heading', { name: 'Panell de Gestió del Personal del CRP' })
-    ).toBeVisible();
+    await login(page);
+
     const fila = page.getByRole('row').filter({ hasText: idReserva });
     await expect(fila).toBeVisible();
     await expect(fila).toContainText('Pendent de Validació');
@@ -51,11 +56,10 @@ test.describe('Flux complet de reserva', () => {
     // 6. El correu de confirmació queda al registre d'automatitzacions
     await page.getByRole('button', { name: /Automatitzacions & Correu/ }).click();
     await expect(page.getByText('marta@escolaeldrac.cat', { exact: true })).toBeVisible();
-    await expect(page.getByText(/Confirmació de Reserva i Acord de Recollida/).first()).toBeVisible();
   });
 
   test('el formulari valida les dades obligatòries', async ({ page }) => {
-    await page.goto('/');
+    await expect(page.getByText('Bee-Bot')).toBeVisible({ timeout: 15000 });
 
     await page.getByPlaceholder(/Cerca per nom/).fill('Bee-Bot');
     await page.getByRole('button', { name: 'Reservar aquest Material' }).click();

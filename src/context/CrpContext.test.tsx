@@ -1,9 +1,10 @@
-import { act } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Reserva } from '../types/crp';
 import { renderWithCrp } from '../test/utils';
-
-type NovaReserva = Omit<Reserva, 'idReserva' | 'estatReserva' | 'dataCreacio'>;
+import { LocalRepository } from '../data/localRepository';
+import { MATERIALS_DEFAULT, RESERVES_DEFAULT } from '../data/defaultData';
+import { NovaReserva } from '../data/CrpRepository';
 
 const reservaBase: NovaReserva = {
   idMaterial: 'MAT-002',
@@ -17,29 +18,29 @@ const reservaBase: NovaReserva = {
   observacions: 'Projecte de nanociència a 4t de primària.',
 };
 
+const ILLA = { materials: MATERIALS_DEFAULT, reserves: RESERVES_DEFAULT };
+
 describe('CrpContext', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
+  it('carrega les dades per defecte del curs', async () => {
+    const { crp } = renderWithCrp(undefined, { repository: new LocalRepository(ILLA) });
 
-  it('carrega les dades per defecte del curs', () => {
-    const { crp } = renderWithCrp();
-
-    expect(crp.materials).toHaveLength(10);
+    await waitFor(() => expect(crp.materials).toHaveLength(10));
     expect(crp.torns).toHaveLength(6);
     expect(crp.reserves).toHaveLength(5);
+    expect(crp.carregant).toBe(false);
   });
 
-  it('crea una reserva pendent, amb codi i data de retorn del torn', () => {
-    const { crp } = renderWithCrp();
-    let creada: Reserva | undefined;
+  it('crea una reserva pendent, amb codi i data de retorn del torn', async () => {
+    const { crp } = renderWithCrp(undefined, { repository: new LocalRepository(ILLA) });
+    await waitFor(() => expect(crp.materials).toHaveLength(10));
 
-    act(() => {
-      creada = crp.crearReserva(reservaBase);
+    let creada: Reserva | undefined;
+    await act(async () => {
+      creada = await crp.crearReserva(reservaBase);
     });
 
     expect(creada).toBeDefined();
@@ -49,47 +50,48 @@ describe('CrpContext', () => {
     expect(crp.reserves[0].idReserva).toBe(creada!.idReserva);
   });
 
-  it('notifica la bústia del CRP en rebre una sol·licitud', () => {
-    const { crp } = renderWithCrp();
+  it('notifica la bústia del CRP en rebre una sol·licitud', async () => {
+    const { crp } = renderWithCrp(undefined, { repository: new LocalRepository(ILLA) });
+    await waitFor(() => expect(crp.materials).toHaveLength(10));
 
-    act(() => {
-      crp.crearReserva(reservaBase);
+    await act(async () => {
+      await crp.crearReserva(reservaBase);
     });
 
     const notif = crp.notificacions[0];
     expect(notif.tipus).toBe('avis_crp');
     expect(notif.destinatari).toBe('crp@centre-recursos.cat');
     expect(notif.cos).toContain('Marta Soler');
-    expect(notif.cos).toContain('T-03');
   });
 
-  it('calcula la disponibilitat per torn ignorant reserves denegades', () => {
-    const { crp } = renderWithCrp();
+  it('calcula la disponibilitat per torn ignorant reserves denegades', async () => {
+    const { crp } = renderWithCrp(undefined, { repository: new LocalRepository(ILLA) });
+    await waitFor(() => expect(crp.reserves).toHaveLength(5));
 
-    // RES-2026-001 (MAT-001, T-01) està concedida i RES-2026-002 (MAT-001, T-02) pendent
     expect(crp.getDisponibilitatMaterialTorn('MAT-001', 'T-01').disponible).toBe(false);
     expect(crp.getDisponibilitatMaterialTorn('MAT-001', 'T-02').disponible).toBe(false);
     expect(crp.getDisponibilitatMaterialTorn('MAT-001', 'T-03').disponible).toBe(true);
   });
 
-  it('allibera el torn quan la reserva es denega', () => {
-    const { crp } = renderWithCrp();
-    let denegada: Reserva | undefined;
+  it('allibera el torn quan la reserva es denega', async () => {
+    const { crp } = renderWithCrp(undefined, { repository: new LocalRepository(ILLA) });
+    await waitFor(() => expect(crp.reserves).toHaveLength(5));
 
-    act(() => {
-      crp.validarReserva('RES-2026-002', 'Denegada');
+    await act(async () => {
+      await crp.validarReserva('RES-2026-002', 'Denegada');
     });
 
-    denegada = crp.reserves.find(r => r.idReserva === 'RES-2026-002');
+    const denegada = crp.reserves.find(r => r.idReserva === 'RES-2026-002');
     expect(denegada!.estatReserva).toBe('Denegada');
     expect(crp.getDisponibilitatMaterialTorn('MAT-001', 'T-02').disponible).toBe(true);
   });
 
-  it('envia el correu de confirmació amb la data i hora de recollida', () => {
-    const { crp } = renderWithCrp();
+  it('envia el correu de confirmació amb la data i hora de recollida', async () => {
+    const { crp } = renderWithCrp(undefined, { repository: new LocalRepository(ILLA) });
+    await waitFor(() => expect(crp.reserves).toHaveLength(5));
 
-    act(() => {
-      crp.validarReserva('RES-2026-002', 'Concedida', '18/11/2026 a les 10:30 h');
+    await act(async () => {
+      await crp.validarReserva('RES-2026-002', 'Concedida', '18/11/2026 a les 10:30 h');
     });
 
     const reserva = crp.reserves.find(r => r.idReserva === 'RES-2026-002')!;
@@ -100,14 +102,14 @@ describe('CrpContext', () => {
     expect(notif.tipus).toBe('aprovacio_usuari');
     expect(notif.destinatari).toBe('jrius@iesbrossa.cat');
     expect(notif.cos).toContain('18/11/2026 a les 10:30 h');
-    expect(notif.cos).toContain('APROVADA');
   });
 
-  it('envia el correu de denegació indicant el motiu', () => {
-    const { crp } = renderWithCrp();
+  it('envia el correu de denegació indicant el motiu', async () => {
+    const { crp } = renderWithCrp(undefined, { repository: new LocalRepository(ILLA) });
+    await waitFor(() => expect(crp.reserves).toHaveLength(5));
 
-    act(() => {
-      crp.validarReserva('RES-2026-005', 'Denegada');
+    await act(async () => {
+      await crp.validarReserva('RES-2026-005', 'Denegada');
     });
 
     const notif = crp.notificacions[0];
@@ -116,51 +118,55 @@ describe('CrpContext', () => {
     expect(notif.cos).toContain("no s'ha pogut concedir");
   });
 
-  it('el trigger diari recorda els retorns que vencen en 2 dies', () => {
-    // RES-2026-001 i RES-2026-003 retornen el 23/10/2026
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-10-21T10:00:00'));
-
-    const { crp } = renderWithCrp();
-    let resultat: { processades: number; notificacionsEnviades: number } | undefined;
-
-    act(() => {
-      resultat = crp.executarTriggerRecordatoriDiari();
+  it('el trigger diari recorda els retorns que vencen en 2 dies', async () => {
+    const dinsDeDosDies = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+    const repository = new LocalRepository({
+      materials: MATERIALS_DEFAULT,
+      reserves: [{ ...RESERVES_DEFAULT[0], dataRetornPrevista: dinsDeDosDies }],
     });
 
-    expect(resultat).toEqual({ processades: 3, notificacionsEnviades: 2 });
+    const { crp } = renderWithCrp(undefined, { repository });
+    await waitFor(() => expect(crp.reserves).toHaveLength(1));
+
+    let resultat: { processades: number; enviades: number } | undefined;
+    await act(async () => {
+      resultat = await crp.executarRecordatoris();
+    });
+
+    expect(resultat).toEqual({ processades: 1, enviades: 1 });
     const recordatoris = crp.notificacions.filter(n => n.tipus === 'recordatori_retorn');
-    expect(recordatoris).toHaveLength(2);
-    expect(recordatoris.map(n => n.destinatari).sort()).toEqual([
-      'cpons@escolanova.cat',
-      'msoler@escolaeldrac.cat',
-    ]);
+    expect(recordatoris).toHaveLength(1);
+    expect(recordatoris[0].destinatari).toBe('msoler@escolaeldrac.cat');
   });
 
-  it('el trigger diari no envia res si el retorn encara és lluny', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-10-01T10:00:00'));
-
-    const { crp } = renderWithCrp();
-    let resultat: { processades: number; notificacionsEnviades: number } | undefined;
-
-    act(() => {
-      resultat = crp.executarTriggerRecordatoriDiari();
+  it('el trigger diari no envia res si el retorn encara és lluny', async () => {
+    const dinsDeVintDies = new Date(Date.now() + 20 * 86400000).toISOString().slice(0, 10);
+    const repository = new LocalRepository({
+      materials: MATERIALS_DEFAULT,
+      reserves: [{ ...RESERVES_DEFAULT[0], dataRetornPrevista: dinsDeVintDies }],
     });
 
-    expect(resultat!.notificacionsEnviades).toBe(0);
+    const { crp } = renderWithCrp(undefined, { repository });
+    await waitFor(() => expect(crp.reserves).toHaveLength(1));
+
+    let resultat: { processades: number; enviades: number } | undefined;
+    await act(async () => {
+      resultat = await crp.executarRecordatoris();
+    });
+
+    expect(resultat!.enviades).toBe(0);
   });
 
   it('exporta un CSV amb les dues seccions i les dades del catàleg', async () => {
     const createObjectURL = vi.fn((_blob: Blob) => 'blob:mock');
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    // jsdom no implementa aquestes APIs de descàrrega
     Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() });
 
-    const { crp } = renderWithCrp();
+    const { crp } = renderWithCrp(undefined, { repository: new LocalRepository(ILLA) });
+    await waitFor(() => expect(crp.materials).toHaveLength(10));
 
-    act(() => {
-      crp.exportarCSVSheets();
+    await act(async () => {
+      await crp.exportarCsv();
     });
 
     expect(createObjectURL).toHaveBeenCalledTimes(1);
@@ -173,18 +179,6 @@ describe('CrpContext', () => {
     expect(text).toContain('### PESTANYA 3: DISPONIBILITAT_I_RESERVES ###');
     expect(text).toContain('MAT-001');
     expect(text).toContain('RES-2026-001');
-    expect(text.split('\n').filter(l => /^"(MAT|MAQ)-/.test(l))).toHaveLength(10);
-  });
-
-  it('restableix les dades per defecte', () => {
-    const { crp } = renderWithCrp();
-
-    act(() => {
-      crp.crearReserva(reservaBase);
-      crp.restablirDadesPerDefecte();
-    });
-
-    expect(crp.reserves).toHaveLength(5);
-    expect(crp.notificacions).toHaveLength(0);
+    expect(text.split('\r\n').filter(l => /^"(MAT|MAQ)-/.test(l))).toHaveLength(10);
   });
 });

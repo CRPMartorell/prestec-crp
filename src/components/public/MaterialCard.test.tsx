@@ -6,16 +6,17 @@ import { renderWithCrp } from '../../test/utils';
 import { MATERIALS_DEFAULT } from '../../data/defaultData';
 
 describe('MaterialCard', () => {
-  it('resumeix la disponibilitat dels 6 torns', () => {
+  it('resumeix la disponibilitat dels 6 torns', async () => {
     renderWithCrp(<MaterialCard material={MATERIALS_DEFAULT[0]} onReservar={vi.fn()} />);
 
     // MAT-001 té T-01 (concedit) i T-02 (pendent) ocupats
-    expect(screen.getByText('4 de 6 torns lliures')).toBeInTheDocument();
+    expect(await screen.findByText('4 de 6 torns lliures')).toBeInTheDocument();
   });
 
   it('desplega el contingut de la maleta', async () => {
     const user = userEvent.setup();
     renderWithCrp(<MaterialCard material={MATERIALS_DEFAULT[0]} onReservar={vi.fn()} />);
+    await screen.findByText('4 de 6 torns lliures');
 
     expect(screen.queryByText(/Elements inclosos a la maleta/)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Veure contingut de la maleta/ }));
@@ -24,7 +25,7 @@ describe('MaterialCard', () => {
     expect(screen.getByText(/5 guies docents de camp/)).toBeInTheDocument();
   });
 
-  it('bloqueja la reserva si el material no està actiu', () => {
+  it('bloqueja la reserva si el material no està actiu', async () => {
     renderWithCrp(
       <MaterialCard
         material={{ ...MATERIALS_DEFAULT[0], estatGeneral: 'En Manteniment' }}
@@ -32,7 +33,7 @@ describe('MaterialCard', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: /Material no disponible/ })).toBeDisabled();
+    expect(await screen.findByRole('button', { name: /Material no disponible/ })).toBeDisabled();
   });
 
   it('notifica el pare quan es prem reservar', async () => {
@@ -40,7 +41,8 @@ describe('MaterialCard', () => {
     const onReservar = vi.fn();
     renderWithCrp(<MaterialCard material={MATERIALS_DEFAULT[1]} onReservar={onReservar} />);
 
-    await user.click(screen.getByRole('button', { name: /Reservar aquest Material/ }));
+    const boto = await screen.findByRole('button', { name: /Reservar aquest Material/ });
+    await user.click(boto);
 
     expect(onReservar).toHaveBeenCalledWith(MATERIALS_DEFAULT[1]);
   });

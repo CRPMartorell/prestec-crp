@@ -32,6 +32,14 @@ export default defineConfig(({ mode }) => {
       rollupOptions: { input },
     },
     server: {
+      // L'API PHP s'executa a part (php -S 127.0.0.1:8080). En desenvolupament
+      // el front hi arriba per aquest proxy; en producció comparteixen domini.
+      proxy: {
+        '/api': {
+          target: process.env.VITE_API_URL || 'http://127.0.0.1:8080',
+          changeOrigin: false,
+        },
+      },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',

@@ -3,6 +3,9 @@ import { CrpProvider } from './context/CrpContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { PublicCatalog } from './components/public/PublicCatalog';
+import { HttpRepository } from './data/httpRepository';
+
+const repository = new HttpRepository();
 
 /**
  * Aplicació pública: només catàleg i formulari de reserva.
@@ -11,7 +14,7 @@ import { PublicCatalog } from './components/public/PublicCatalog';
  */
 export default function AppPublic() {
   return (
-    <CrpProvider>
+    <CrpProvider repository={repository} mode="public">
       <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
         <Header />
         <main className="flex-1">

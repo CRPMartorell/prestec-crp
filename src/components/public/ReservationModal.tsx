@@ -9,7 +9,7 @@ interface ReservationModalProps {
 }
 
 export const ReservationModal: React.FC<ReservationModalProps> = ({ material, onClose }) => {
-  const { torns, reserves, getDisponibilitatMaterialTorn, crearReserva } = useCrp();
+  const { torns, reserves, getDisponibilitatMaterialTorn, crearReserva, recarregar } = useCrp();
 
   const [tornSeleccionat, setTornSeleccionat] = useState<string>('');
   const [dataIniciSetmana, setDataIniciSetmana] = useState<string>('');
@@ -24,6 +24,8 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [reservaConfirmada, setReservaConfirmada] = useState<{ idReserva: string } | null>(null);
+  const [enviant, setEnviant] = useState(false);
+  const [errorEnviament, setErrorEnviament] = useState<string | null>(null);
 
   if (!material) return null;
 
@@ -63,25 +65,36 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || enviant) return;
 
-    const nova = crearReserva({
-      idMaterial: material.id,
-      tipus: material.tipus,
-      tornAssignat: isPedagogic ? tornSeleccionat : undefined,
-      dataIniciSetmana: !isPedagogic ? dataIniciSetmana : undefined,
-      dataFiSetmana: !isPedagogic ? dataFiSetmana : undefined,
-      nomSollicitant,
-      centreEducatiu,
-      municipi,
-      correu,
-      telefon,
-      observacions,
-    });
+    setEnviant(true);
+    setErrorEnviament(null);
 
-    setReservaConfirmada({ idReserva: nova.idReserva });
+    try {
+      const nova = await crearReserva({
+        idMaterial: material.id,
+        tipus: material.tipus,
+        tornAssignat: isPedagogic ? tornSeleccionat : undefined,
+        dataIniciSetmana: !isPedagogic ? dataIniciSetmana : undefined,
+        dataFiSetmana: !isPedagogic ? dataFiSetmana : undefined,
+        nomSollicitant,
+        centreEducatiu,
+        municipi,
+        correu,
+        telefon,
+        observacions,
+      });
+
+      setReservaConfirmada({ idReserva: nova.idReserva });
+    } catch (err) {
+      setErrorEnviament((err as Error).message);
+      await recarregar();
+      setTornSeleccionat('');
+    } finally {
+      setEnviant(false);
+    }
   };
 
   return (
@@ -359,20 +372,29 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
                 </span>
               </div>
 
+              {errorEnviament && (
+                <div role="alert" className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-800">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{errorEnviament}</span>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3 pt-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors"
+                  disabled={enviant}
+                  className="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-50"
                 >
                   Cancel·lar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center gap-2"
+                  disabled={enviant}
+                  className="px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-200 transition-all flex items-center gap-2 disabled:bg-slate-300 disabled:shadow-none"
                 >
-                  <span>Enviar Sol·licitud de Préstec</span>
+                  <span>{enviant ? 'Enviant…' : 'Enviar Sol·licitud de Préstec'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

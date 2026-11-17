@@ -6,7 +6,7 @@ import { ReservationModal } from './ReservationModal';
 import { Search, Filter, Box, Wrench, Shield, Calendar, Sparkles, CheckCircle2, RefreshCw } from 'lucide-react';
 
 export const PublicCatalog: React.FC = () => {
-  const { materials, torns, getDisponibilitatMaterialTorn } = useCrp();
+  const { materials, torns, getDisponibilitatMaterialTorn, carregant, error, recarregar } = useCrp();
   const [cerca, setCerca] = useState('');
   const [filtreTipus, setFiltreTipus] = useState<string>('tots');
   const [filtreAmbit, setFiltreAmbit] = useState<string>('tots');
@@ -65,6 +65,49 @@ export const PublicCatalog: React.FC = () => {
     setFiltreAmbit('tots');
     setNomésDisponibles(false);
   };
+
+  if (carregant) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" aria-busy="true">
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-8 animate-pulse">
+          <div className="h-4 w-48 bg-slate-200 rounded mb-3" />
+          <div className="h-3 w-full bg-slate-100 rounded mb-2" />
+          <div className="h-3 w-2/3 bg-slate-100 rounded" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden animate-pulse">
+              <div className="h-48 bg-slate-200" />
+              <div className="p-5 space-y-3">
+                <div className="h-4 w-2/3 bg-slate-200 rounded" />
+                <div className="h-3 w-full bg-slate-100 rounded" />
+                <div className="h-3 w-1/2 bg-slate-100 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="sr-only">Carregant el catàleg…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <RefreshCw className="w-7 h-7" />
+        </div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">No s'ha pogut carregar el catàleg</h2>
+        <p className="text-sm text-slate-600 mb-5">{error}</p>
+        <button
+          onClick={() => void recarregar()}
+          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl"
+        >
+          Torna-ho a provar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

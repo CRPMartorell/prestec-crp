@@ -5,10 +5,10 @@ import { PublicCatalog } from './PublicCatalog';
 import { renderWithCrp } from '../../test/utils';
 
 describe('PublicCatalog', () => {
-  it('mostra tot el catàleg públic', () => {
+  it('mostra tot el catàleg públic', async () => {
     renderWithCrp(<PublicCatalog />);
 
-    expect(screen.getByText("De l'hort a casa")).toBeInTheDocument();
+    expect(await screen.findByText("De l'hort a casa")).toBeInTheDocument();
     expect(screen.getByText('Nanokit')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Reservar aquest Material/ })).toHaveLength(10);
   });
@@ -16,6 +16,7 @@ describe('PublicCatalog', () => {
   it('filtra pel terme de cerca', async () => {
     const user = userEvent.setup();
     renderWithCrp(<PublicCatalog />);
+    await screen.findByText('Nanokit');
 
     await user.type(screen.getByPlaceholderText(/Cerca per nom/), 'nanokit');
 
@@ -26,6 +27,7 @@ describe('PublicCatalog', () => {
   it('filtra per tipologia de material', async () => {
     const user = userEvent.setup();
     renderWithCrp(<PublicCatalog />);
+    await screen.findByText('Nanokit');
 
     await user.click(screen.getByRole('button', { name: /Maquinària/ }));
 
@@ -34,9 +36,10 @@ describe('PublicCatalog', () => {
     expect(screen.getByText(/Impressora 3D/)).toBeInTheDocument();
   });
 
-  it("mostra un estat buit quan cap material coincideix", async () => {
+  it('mostra un estat buit quan cap material coincideix', async () => {
     const user = userEvent.setup();
     renderWithCrp(<PublicCatalog />);
+    await screen.findByText('Nanokit');
 
     await user.type(screen.getByPlaceholderText(/Cerca per nom/), 'zzzz');
 

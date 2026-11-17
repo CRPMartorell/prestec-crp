@@ -74,6 +74,13 @@ try {
         Http::json(['ok' => true, 'data' => $crp->crearReserva(Http::cos(), $_SERVER['REMOTE_ADDR'] ?? '')], 201);
     }
 
+    // Només per a entorns de prova (Playwright): reinicia les dades.
+    if ($metode === 'POST' && $api === '/test/reset' && getenv('CRP_TEST_RESET') === '1') {
+        Seed::buidar($db);
+        Seed::sembrar($db);
+        Http::json(['ok' => true, 'data' => true]);
+    }
+
     // --- Privat ---
     $usuari = Auth::exigeix();
 
