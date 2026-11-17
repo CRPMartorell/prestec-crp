@@ -23,7 +23,11 @@ echo "Motor: {$driver}\n";
 if ($driver === 'sqlite' && $fresh) {
     $path = $config['sqlite']['path'];
     if (is_file($path)) {
-        unlink($path);
+        // Si un servidor de proves encara té el fitxer obert, es buida en lloc
+        // d'esborlar-lo; l'esquema torna a crear les taules igualment.
+        if (!@unlink($path)) {
+            file_put_contents($path, '');
+        }
         echo "Esborrada la base SQLite anterior\n";
     }
     $db = new Db($config);
