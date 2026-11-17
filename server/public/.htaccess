@@ -1,0 +1,31 @@
+# Hetzner Webhosting (Apache). El document root ha de ser aquesta carpeta.
+
+Options -Indexes
+DirectoryIndex index.html index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # API -> front controller
+  RewriteRule ^api(/.*)?$ index.php [L,QSA]
+
+  # Fitxers existents es serveixen tal qual
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # La resta, a l'aplicació (una sola pàgina)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Capçaleres de seguretat bàsiques
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# No exposar fitxers sensibles si algú els puja per error
+<FilesMatch "\.(sql|ini|log|example\.php)$">
+  Require all denied
+</FilesMatch>

@@ -16,3 +16,7 @@ blob-report/
 # Apps Script (credencials i configuració d'entorn)
 .clasprc.json
 apps-script/.clasp.*.json
+
+# Backend PHP
+server/config/config.php
+server/var/
