@@ -3,6 +3,9 @@
 Options -Indexes
 DirectoryIndex index.html index.php
 
+# Carpetes internes: mai accessibles des del navegador
+RedirectMatch 404 ^/(src|config|sql|tools|var|data)(/|$)
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
 

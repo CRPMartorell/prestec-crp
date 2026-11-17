@@ -37,7 +37,7 @@ export default defineConfig({
       stderr: 'pipe',
     },
     {
-      command: 'npm run dev',
+      command: 'npm run dev:web',
       url: BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

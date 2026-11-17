@@ -1,7 +1,11 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../src/bootstrap.php';
+// En el repositori, aquest fitxer viu a server/public/ i la resta a server/.
+// Al desplegament de Hetzner tot queda pla al document root, de manera que
+// cal detectar on és la carpeta src.
+$base = is_file(__DIR__ . '/../src/bootstrap.php') ? dirname(__DIR__) : __DIR__;
+require_once $base . '/src/bootstrap.php';
 
 [$config, $db, $crp] = crp_bootstrap();
 

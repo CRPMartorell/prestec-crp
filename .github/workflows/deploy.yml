@@ -1,8 +1,9 @@
-name: Desplega a GitHub Pages
+name: Desplega a GitHub Pages (manual)
 
+# Des del pas a PHP + MySQL, el catàleg necessita l'API al mateix domini:
+# GitHub Pages només serveix estàtics, així que aquest workflow queda com a
+# manual i el desplegament real es fa a Hetzner amb `npm run deploy:prep`.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
