@@ -25,9 +25,15 @@ Després obre:
 
 | | Adreça |
 | --- | --- |
-| Catàleg | <http://localhost:3000/> |
-| Panell | <http://localhost:3000/admin.html> |
+| Catàleg | <http://127.0.0.1:3000/> |
+| Panell | <http://127.0.0.1:3000/admin.html> |
 | Accés de prova | `crp@example.cat` / `prova-segura-2026` |
+
+Per canviar la contrasenya o crear un altre usuari:
+
+```bash
+npm run crear-usuari -- el.correu@xtec.cat la-nova-contrasenya "Nom i cognoms"
+```
 
 Ctrl+C atura els dos processos. Si vols arrencar-los per separat:
 
