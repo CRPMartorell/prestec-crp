@@ -18,19 +18,15 @@ Dos requisits manen sobre la resta:
 2. **Dos models de préstec.** Els recursos pedagògics es presten per **6 torns tancats** del curs
    2026-2027; la maquinària, per **setmanes naturals** (dilluns–divendres).
 
-### Estat actual: prototip funcional, sense backend
+### Estat actual: front React + backend PHP + MySQL
 
-Tot viu al navegador: estat a React + `localStorage`, correus simulats com a registre
-(`NotificacioEmail`) i sortida a Google Sheets via CSV. **No hi ha autenticació** i cada navegador
-té la seva pròpia còpia de les dades.
+La interfície és la mateixa, però les dades ja no viuen al navegador: venen d'una **API PHP** sobre
+**MySQL** (SQLite en desenvolupament). L'aplicació pública només llegeix el catàleg i envia
+sol·licituds; el panell intern requereix **sessió** (taula `usuaris`, `password_hash`).
 
-La part pública ja està **separada i desplegada** (GitHub Pages) i la privada és un build a part que
-encara no es publica; el backend d'Apps Script no existeix. El desenvolupament d'Apps Script es farà
-en un **compte personal** i la producció viurà al **compte del centre** (§19 de
-[`documentacion.md`](documentacion.md)). L'estat detallat, el que queda pendent i el model d'estat
-objectiu són al mateix document («Estat del projecte» i §18).
-L'especificació original de la solució amb Google Workspace és a
-[`public/assets/aistudio/…google_workspace….md`](public/assets/aistudio/disseny_del_proc_s_de_pr_stec_de_material_amb_google_workspace__1__7eacdc73.md).
+L'entorn objectiu és **Hetzner Webhosting S** (Apache + PHP + MySQL), desplegant per FTP. El
+desenvolupament es fa en un compte personal i la producció viurà al compte del centre
+(§19 de [`documentacion.md`](documentacion.md)).
 
 ---
 
@@ -41,23 +37,26 @@ L'especificació original de la solució amb Google Workspace és a
 | React | 19 | Dues pàgines (`index.html`, `admin.html`), sense router |
 | TypeScript | 7 | `tsc --noEmit` com a lint; **no** té `strict` activat |
 | Vite | 8 | `@vitejs/plugin-react`, Tailwind v4 via `@tailwindcss/vite` |
+| PHP | 8.2+ | API a `server/`, PDO; a Hetzner l'aporta el hosting |
+| MySQL | 5.7/8 | Producció; SQLite en local per desenvolupar |
 | Vitest | 5 | Entorn `jsdom`, pool `threads` |
-| Playwright | 1.64 | Chromium headless, `webServer` amb `npm run dev` |
-| lucide-react | — | Icones |
+| Playwright | 1.64 | Chromium headless; arrenca PHP i Vite |
 
 ## 3. Comandes
 
 ```bash
-npm install          # dependències
-npm run dev          # http://localhost:3000 (catàleg) i /admin.html (panell)
-npm run build        # build de les dues pàgines (dist/)
-npm run build:public # només catàleg -> dist/public/
-npm run build:private# només panell  -> dist/private/
-npm run check:bundle # comprova que dist/public no contingui el panell
-npm run preview      # previsualitza el build
-npm run lint         # tsc --noEmit
-npm test             # Vitest (22 proves)
-npm run test:watch   # Vitest en mode watch
+npm install              # dependències
+npm run dev              # Vite a :3000 (proxy /api -> :8080)
+php server/tools/install.php                                  # esquema + dades (SQLite)
+php -S 127.0.0.1:8080 -t server/public server/public/index.php # API PHP
+npm run build            # build de les dues pàgines (dist/)
+npm run build:public     # només catàleg -> dist/public/
+npm run build:private    # només panell  -> dist/private/
+npm run check:bundle     # comprova que dist/public no contingui el panell
+npm run preview          # previsualitza el build
+npm run lint             # tsc --noEmit
+npm test                 # Vitest (21 proves)
+npm run test:watch       # Vitest en mode watch
 npm run test:e2e     # Playwright (11 proves)
 npm run verify       # lint + test + build:public + check:bundle
 ```
@@ -70,8 +69,8 @@ npm run test:e2e:install
 
 ### Números actuals
 
-- **22 proves unitàries** en 4 fitxers (`src/**/*.test.tsx`).
-- **11 proves E2E** en 3 fitxers (`e2e/*.spec.ts`).
+- **21 proves unitàries** en 4 fitxers (`src/**/*.test.tsx`).
+- **11 proves E2E** en 3 fitxers (`e2e/*.spec.ts`) contra el backend PHP.
 
 ---
 
@@ -134,13 +133,13 @@ Fitxers de suport:
 
 ### Estat i accions (`CrpContext`)
 
-`materials`, `torns`, `reserves`, `notificacions` i
-`crearReserva`, `validarReserva`, `afegirMaterial`, `actualitzarMaterial`, `eliminarMaterial`,
-`executarTriggerRecordatoriDiari`, `esborrarNotificacions`, `restablirDadesPerDefecte`,
-`getDisponibilitatMaterialTorn`, `exportarCSVSheets`.
+`materials`, `torns`, `reserves`, `notificacions`, `carregant`, `error`, `autenticat` i
+`crearReserva`, `validarReserva`, `desarMaterial`, `eliminarMaterial`, `executarRecordatoris`,
+`exportarCsv`, `login`, `logout`, `recarregar`, `getDisponibilitatMaterialTorn`.
 
-Persistència: `localStorage` amb claus `crp_materials_v1`, `crp_reserves_v1`,
-`crp_notificacions_v1`. Els torns es llegeixen de `crp_torns_v1` però **mai s'hi escriuen**.
+Totes les accions són **asíncrones** i passen per un `CrpRepository`:
+`LocalRepository` (tests, dades a memòria), `HttpRepository` (producció, `/api/...`).
+La persistència real és al servidor: `server/` amb PDO (MySQL o SQLite).
 
 ---
 
@@ -221,8 +220,8 @@ Convencions per no trencar-les:
 - Selectors per **rol i nom accessible**, no per CSS. Si hi ha dos elements amb el mateix nom
   (p. ex. el botó de capçalera i l'enllaç del peu), acota: `getByRole('banner')…`.
 - Els modals tenen títols `h2`; les targetes del catàleg, `h3`. Usa `level` quan calgui.
-- Cada test arrenca amb `localStorage` net (context nou de Playwright) → dades per defecte.
-- El servidor de desenvolupament l'aixeca `playwright.config.ts`; no cal arrencar-lo a mà.
+- Cada test reinicia la base via `POST /api/test/reset` (només amb `CRP_TEST_RESET=1`).
+- `playwright.config.ts` arrenca **PHP** i **Vite**; no cal fer-ho a mà.
 
 ---
 
@@ -242,29 +241,23 @@ Repositori **trunk-based**: es treballa sobre `main` amb commits petits i atòmi
 
 ## 10. Limitacions conegudes i deute tècnic
 
-1. **Sense backend ni autenticació**: les dades són per navegador i el panell no té login propi.
-   El bundle públic ja no conté el panell, però el desplegament privat necessita una capa
-   d'autenticació (vegeu `documentacion.md` §11).
-2. **ID de reserva** calculat amb `reserves.length + 1` → pot col·lisionar després d'esborrar o
-   restablir.
-3. **Les setmanes de maquinària no es validen contra solapaments**: es pot reservar dues vegades la
-   mateixa setmana.
-4. **`torns` no es persisteix** i el restabliment no el toca.
-5. **El CSV** és un sol fitxer amb marcadors `###`, no un llibre multi-pestanya importable.
-6. **Dependències no usades** (`@google/genai`, `express`, `dotenv`, `motion`, `tsx`, `esbuild`
+1. **Desplegament pendent**: el backend funciona en local (SQLite), però encara no s'ha publicat a
+   Hetzner ni s'ha provat contra MySQL real.
+2. **Correu**: `mail()` del hosting no està verificat; en desenvolupament s'escriu a `var/correus.log`.
+3. **Sessions**: el panell depèn de la sessió de PHP; no hi ha "recorda'm" ni caducitat explícita.
+4. **Dependències no usades** (`@google/genai`, `express`, `dotenv`, `motion`, `tsx`, `esbuild`
    directe): restes de la plantilla d'AI Studio.
-7. `vite.config.ts` usa `__dirname`, que Vite avisa que deixarà de suportar-se amb el carregador
+5. `vite.config.ts` usa `__dirname`, que Vite avisa que deixarà de suportar-se amb el carregador
    natiu. Canvi pendent: `import.meta.dirname`.
-8. `tsconfig.json` no té `strict`. Activar-lo implicarà correccions.
-9. Els modals no atrapen el focus ni es tanquen amb `Escape`.
+6. `tsconfig.json` no té `strict`. Activar-lo implicarà correccions.
+7. Els modals no atrapen el focus ni es tanquen amb `Escape`.
 
 ## 11. Full de ruta suggerit
 
-1. Backend real (Google Sheets + Apps Script o Supabase) i autenticació del panell CRP.
-2. Unicitat de torn/setmana garantida al servidor (no només a la UI).
-3. Generar l'ID amb un comptador persistent o UUID.
-4. Exportació real a `.xlsx` multi-pestanya.
-5. Activar `strict` i netejar dependències.
+1. Publicar a Hetzner (MySQL real, FTP) i provar `mail()`.
+2. Proves d'integració del backend PHP (contracte de l'API).
+3. Exportació real a `.xlsx` multi-pestanya.
+4. Activar `strict` i netejar dependències.
 
 ## 12. Documentació relacionada
 
