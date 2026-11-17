@@ -46,13 +46,16 @@ desenvolupament es fa en un compte personal i la producció viurà al compte del
 
 ```bash
 npm install              # dependències
-npm run dev              # Vite a :3000 (proxy /api -> :8080)
-php server/tools/install.php                                  # esquema + dades (SQLite)
-php -S 127.0.0.1:8080 -t server/public server/public/index.php # API PHP
+npm run local            # tot: comprova PHP, prepara la BD i arrenca API + web
+npm run dev              # el mateix que `local`
+npm run dev:web          # només Vite (:3000)
+npm run dev:api          # només PHP (:8080)
+npm run setup            # crea/actualitza la base i l'usuari del CRP
 npm run build            # build de les dues pàgines (dist/)
 npm run build:public     # només catàleg -> dist/public/
 npm run build:private    # només panell  -> dist/private/
 npm run check:bundle     # comprova que dist/public no contingui el panell
+npm run deploy:prep      # munta deploy/ per pujar per FTP a Hetzner
 npm run preview          # previsualitza el build
 npm run lint             # tsc --noEmit
 npm test                 # Vitest (21 proves)
