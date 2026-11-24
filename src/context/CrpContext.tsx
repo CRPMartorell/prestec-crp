@@ -20,6 +20,7 @@ interface CrpContextType {
   validarReserva: (idReserva: string, estat: EstatReserva, recollida?: string) => Promise<void>;
   desarMaterial: (material: Material) => Promise<void>;
   eliminarMaterial: (id: string) => Promise<void>;
+  pujarImatge: (fitxer: File) => Promise<string>;
   executarRecordatoris: () => Promise<{ processades: number; enviades: number }>;
   exportarCsv: () => Promise<void>;
   getDisponibilitatMaterialTorn: (
@@ -147,6 +148,8 @@ export const CrpProvider: React.FC<CrpProviderProps> = ({
     [repo, carregar]
   );
 
+  const pujarImatge = useCallback((fitxer: File) => repo.pujarImatge(fitxer), [repo]);
+
   const executarRecordatoris = useCallback(async () => {
     const resultat = await repo.executarRecordatoris();
     await carregar(true);
@@ -199,6 +202,7 @@ export const CrpProvider: React.FC<CrpProviderProps> = ({
     validarReserva,
     desarMaterial,
     eliminarMaterial,
+    pujarImatge,
     executarRecordatoris,
     exportarCsv,
     getDisponibilitatMaterialTorn,

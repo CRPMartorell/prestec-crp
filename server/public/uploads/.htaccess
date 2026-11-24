@@ -1,0 +1,10 @@
+# Carpeta d'imatges pujades: només fitxers, mai codi executable.
+Options -Indexes -ExecCGI
+
+<FilesMatch "\.(php|phtml|phar|pl|py|cgi|sh)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+</IfModule>

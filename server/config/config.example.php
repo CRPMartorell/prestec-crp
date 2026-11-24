@@ -2,9 +2,20 @@
 // Copia aquest fitxer com a config.php i ajusta els valors.
 // A Hetzner, les dades de MySQL les dona el panell konsoleH.
 
+// Carpeta on es desen les imatges pujades. Al repositori és server/public/uploads
+// (servida per `php -S -t server/public`); al desplegament, uploads a l'arrel.
+$arrelProjecte = dirname(__DIR__);
+$carpetaImatges = is_dir($arrelProjecte . '/public')
+    ? $arrelProjecte . '/public/uploads'
+    : $arrelProjecte . '/uploads';
+
 return [
     // 'mysql' a producció, 'sqlite' per desenvolupament local.
     'driver' => getenv('CRP_DB_DRIVER') ?: 'sqlite',
+
+    // Imatges dels materials (JPG/PNG/WebP, màxim 3 MB).
+    'uploads_dir' => getenv('CRP_UPLOADS_DIR') ?: $carpetaImatges,
+    'uploads_url' => getenv('CRP_UPLOADS_URL') ?: '/uploads',
 
     // MySQL (Hetzner)
     'mysql' => [

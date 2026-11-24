@@ -23,5 +23,10 @@ apps-script/.clasp.*.json
 server/config/config.php
 server/var/
 
+# Imatges pujades pels usuaris (no es versionen; el .htaccess sí)
+server/public/uploads/*
+!server/public/uploads/.htaccess
+uploads/*
+
 # Artefacte de desplegament
 deploy/

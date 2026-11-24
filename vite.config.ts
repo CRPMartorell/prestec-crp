@@ -42,6 +42,11 @@ export default defineConfig(({ mode }) => {
           target: process.env.VITE_API_URL || 'http://127.0.0.1:8080',
           changeOrigin: false,
         },
+        // Imatges pujades: les serveix el PHP (server/public/uploads).
+        '/uploads': {
+          target: process.env.VITE_API_URL || 'http://127.0.0.1:8080',
+          changeOrigin: false,
+        },
       },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.

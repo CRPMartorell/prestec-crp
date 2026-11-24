@@ -35,6 +35,8 @@ export interface CrpRepository {
   validarReserva(id: string, estat: EstatReserva, recollida?: string): Promise<void>;
   desarMaterial(material: Material): Promise<void>;
   eliminarMaterial(id: string): Promise<void>;
+  /** Puja una imatge i retorna la URL pública per desar a `urlImatge`. */
+  pujarImatge(fitxer: File): Promise<string>;
   executarRecordatoris(): Promise<ResultatRecordatoris>;
   exportarCsv(): Promise<string>;
 

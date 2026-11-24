@@ -37,6 +37,7 @@ export const AdminDashboard: React.FC = () => {
     validarReserva,
     desarMaterial,
     eliminarMaterial,
+    pujarImatge,
     executarRecordatoris,
     exportarCsv,
   } = useCrp();
@@ -53,6 +54,7 @@ export const AdminDashboard: React.FC = () => {
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [isNewMaterial, setIsNewMaterial] = useState(false);
   const [errorMaterial, setErrorMaterial] = useState<string | null>(null);
+  const [pujantImatge, setPujantImatge] = useState(false);
 
   // Trigger feedback
   const [triggerResult, setTriggerResult] = useState<string | null>(null);
@@ -84,6 +86,23 @@ export const AdminDashboard: React.FC = () => {
     const recollida = dataHoraRecollidaInput;
     setReservaPerValidar(null);
     await validarReserva(id, estat, recollida);
+  };
+
+  const handlePujarImatge = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fitxer = e.target.files?.[0];
+    if (!fitxer || !editingMaterial) return;
+
+    setErrorMaterial(null);
+    setPujantImatge(true);
+    try {
+      const url = await pujarImatge(fitxer);
+      setEditingMaterial(m => (m ? { ...m, urlImatge: url } : m));
+    } catch {
+      setErrorMaterial("No s'ha pogut pujar la imatge. Comprova el format (JPG, PNG o WebP) i que no passi de 3 MB.");
+    } finally {
+      setPujantImatge(false);
+      e.target.value = '';
+    }
   };
 
   const handleSaveMaterial = async (e: React.FormEvent) => {
@@ -992,7 +1011,46 @@ function enviarRecordatoriDevolucio() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">URL Imatge de Portada:</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="imatgeMaterial">
+                  Imatge de portada:
+                </label>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-28 h-20 shrink-0 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+                    {editingMaterial.urlImatge ? (
+                      <img
+                        src={editingMaterial.urlImatge}
+                        alt="Previsualització de la imatge"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400">
+                        Sense imatge
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <input
+                      id="imatgeMaterial"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handlePujarImatge}
+                      disabled={pujantImatge}
+                      className="block w-full text-xs text-slate-600 file:mr-3 file:px-3 file:py-1.5 file:rounded-xl file:border-0 file:bg-indigo-600 file:text-white file:text-xs file:font-bold hover:file:bg-indigo-700 file:cursor-pointer disabled:opacity-60"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1.5 leading-snug">
+                      <strong>Consell:</strong> JPG, PNG o WebP · <strong>màxim 3 MB</strong> · mida
+                      recomanada <strong>1200 × 800 px</strong> (proporció 3:2, horitzontal). Així la
+                      fitxa es veu nítida sense alentir el catàleg.
+                    </p>
+                    {pujantImatge && <p className="text-[11px] text-indigo-600 font-semibold mt-1">Pujant la imatge…</p>}
+                  </div>
+                </div>
+
+                <label className="block text-xs font-bold text-slate-700 mt-3 mb-1">
+                  O enllaç directe a la imatge:
+                </label>
                 <input
                   type="url"
                   value={editingMaterial.urlImatge}

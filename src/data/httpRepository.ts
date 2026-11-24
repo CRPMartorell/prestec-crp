@@ -125,6 +125,28 @@ export class HttpRepository implements CrpRepository {
     await this.peticio<boolean>(`/api/materials/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }
 
+  async pujarImatge(fitxer: File): Promise<string> {
+    const dades = new FormData();
+    dades.append('imatge', fitxer);
+
+    const resposta = await fetch(this.base + '/api/materials/imatge', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'X-CSRF': this.csrf ?? '' },
+      body: dades,
+    });
+
+    const json = (await resposta.json().catch(() => null)) as
+      | { ok: boolean; data?: { url: string }; error?: string }
+      | null;
+
+    if (!resposta.ok || !json?.ok || !json.data) {
+      throw new ErrorApi(json?.error ?? "No s'ha pogut pujar la imatge", resposta.status);
+    }
+
+    return json.data.url;
+  }
+
   executarRecordatoris(): Promise<ResultatRecordatoris> {
     return this.peticio<ResultatRecordatoris>('/api/recordatoris', { method: 'POST' });
   }

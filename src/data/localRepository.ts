@@ -138,6 +138,11 @@ export class LocalRepository implements CrpRepository {
     this.materials = this.materials.filter(m => m.id !== id);
   }
 
+  // Sense servidor: retorna una URL temporal del navegador.
+  async pujarImatge(fitxer: File): Promise<string> {
+    return URL.createObjectURL(fitxer);
+  }
+
   async executarRecordatoris(): Promise<ResultatRecordatoris> {
     const avui = new Date();
     let processades = 0;

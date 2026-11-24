@@ -12,6 +12,7 @@ function crp_bootstrap(): array
     require_once __DIR__ . '/Auth.php';
     require_once __DIR__ . '/Correu.php';
     require_once __DIR__ . '/Seed.php';
+    require_once __DIR__ . '/Imatges.php';
     require_once __DIR__ . '/Crp.php';
 
     $fitxer = __DIR__ . '/../config/config.php';

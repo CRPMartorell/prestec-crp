@@ -107,6 +107,12 @@ try {
         Http::json(['ok' => true, 'data' => true]);
     }
 
+    if ($metode === 'POST' && $api === '/materials/imatge') {
+        $imatges = new Imatges($config);
+        $url = $imatges->desar($_FILES['imatge'] ?? []);
+        Http::json(['ok' => true, 'data' => ['url' => $url]], 201);
+    }
+
     if ($metode === 'POST' && $api === '/materials') {
         Http::json(['ok' => true, 'data' => $crp->desarMaterial(Http::cos(), $usuari['correu'])]);
     }

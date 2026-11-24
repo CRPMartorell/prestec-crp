@@ -42,6 +42,7 @@ deploy/
 ├── tools/install.php          alternativa per CLI
 ├── data/seed.json
 ├── config/config.example.php
+├── uploads/                   imatges dels materials (escriptura 775)
 └── var/                       fitxers temporals (buida)
 ```
 
@@ -130,6 +131,8 @@ Si `/api/cataleg` dona error 500, revisa `config/config.php` i que l'esquema s'h
   les carpetes internes ja estan bloquejades per `.htaccess`.
 - **`var/`** ha de tenir permisos d'escriptura (`775`) si algun dia tornes a SQLite o vols el log de
   correus.
+- **`uploads/`** ha de tenir permisos d'escriptura (`775`) perquè el panell pugui pujar imatges
+  (JPG/PNG/WebP, màxim 3 MB). Inclou un `.htaccess` que impedeix executar-hi cap fitxer de codi.
 - **Correu**: `mail_transport = mail` fa servir `mail()` del hosting. El remitent ha de ser del
   domini, o els filtres antispam el rebutjaran.
 - **HTTPS**: activa'l a konsoleH (Let's Encrypt gratuït). El `Secure` de la cookie de sessió

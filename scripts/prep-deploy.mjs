@@ -51,6 +51,11 @@ copia(join(arrel, 'server/config/config.example.php'), join(deploy, 'config', 'c
 mkdirSync(join(deploy, 'var'), { recursive: true });
 writeFileSync(join(deploy, 'var', '.gitkeep'), '');
 
+// Imatges pujades: carpeta amb protecció perquè ningú hi executi codi.
+mkdirSync(join(deploy, 'uploads'), { recursive: true });
+copia(join(arrel, 'server/public/uploads/.htaccess'), join(deploy, 'uploads', '.htaccess'));
+writeFileSync(join(deploy, 'uploads', '.gitkeep'), '');
+
 console.log('✓ deploy/ llest');
 console.log('  index.html + assets/   catàleg públic');
 console.log('  admin.html             panell (requereix sessió)');
