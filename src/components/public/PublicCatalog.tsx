@@ -127,11 +127,11 @@ export const PublicCatalog: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="bg-white/10 backdrop-blur-xs rounded-xl p-3 border border-white/10">
-              <span className="font-bold block text-white text-sm mb-0.5">📦 1. Consulta el catàleg de recursos</span>
+              <span className="font-bold block text-white text-sm mb-0.5">📦 1. Tria el recurs</span>
               <span className="text-slate-300">Consulta descripció, contingut de la maleta i guia a Google Drive.</span>
             </div>
             <div className="bg-white/10 backdrop-blur-xs rounded-xl p-3 border border-white/10">
-              <span className="font-bold block text-white text-sm mb-0.5">🗓️ 2. Comprova dates</span>
+              <span className="font-bold block text-white text-sm mb-0.5">🗓️ 2. Comprova torns</span>
               <span className="text-slate-300">Visualitza en verd els torns o setmanes lliures en temps real.</span>
             </div>
             <div className="bg-white/10 backdrop-blur-xs rounded-xl p-3 border border-white/10">
