@@ -25,7 +25,6 @@ test.describe('Flux complet de reserva', () => {
     await page
       .getByPlaceholder('Ex: nom@xtec.cat o nom@centre.cat')
       .fill('marta@escolaeldrac.cat');
-    await page.getByPlaceholder('Ex: 612345678').fill('611223344');
     await page.getByRole('button', { name: /Enviar Sol·licitud de Préstec/ }).click();
 
     // 3. Confirma i obté el codi de seguiment

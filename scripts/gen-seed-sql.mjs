@@ -26,9 +26,9 @@ for (const t of seed.torns) {
 
 for (const r of seed.reserves) {
   linies.push(
-    `INSERT INTO reserves (id_reserva, id_material, tipus, torn_assignat, data_inici_setmana, data_fi_setmana, nom_sollicitant, centre, municipi, correu, telefon, observacions, estat, data_hora_recollida, data_creacio, data_retorn) VALUES (${[
+    `INSERT INTO reserves (id_reserva, id_material, tipus, torn_assignat, data_inici_setmana, data_fi_setmana, nom_sollicitant, centre, municipi, correu, observacions, estat, data_hora_recollida, data_creacio, data_retorn) VALUES (${[
       r.idReserva, r.idMaterial, r.tipus, r.tornAssignat ?? null, r.dataIniciSetmana ?? null, r.dataFiSetmana ?? null,
-      r.nomSollicitant, r.centreEducatiu, r.municipi, r.correu, r.telefon, r.observacions ?? '', r.estatReserva,
+      r.nomSollicitant, r.centreEducatiu, r.municipi, r.correu, r.observacions ?? '', r.estatReserva,
       r.dataHoraRecollida ?? null, r.dataCreacio, r.dataRetornPrevista ?? null,
     ].map(esc).join(', ')});`
   );

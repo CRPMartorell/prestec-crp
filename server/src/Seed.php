@@ -56,7 +56,6 @@ final class Seed
                 'centre' => $r['centreEducatiu'],
                 'municipi' => $r['municipi'],
                 'correu' => $r['correu'],
-                'telefon' => $r['telefon'],
                 'observacions' => $r['observacions'] ?? '',
                 'estat' => $r['estatReserva'],
                 'data_hora_recollida' => $r['dataHoraRecollida'] ?? null,

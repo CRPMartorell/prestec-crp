@@ -351,8 +351,8 @@ Detalls:
    `Session.getActiveUser().getEmail()`.
 4. **Retenció**: les reserves finalitzades es poden arxivar a una pestanya `Historic` i esborrar les
    dades personals passat el curs, d'acord amb el que decideixi el centre.
-5. **URLs**: els identificadors de reserva poden anar a la query string del JSONP, però **mai** noms,
-   correus ni telèfons (quedarien als logs del servidor i del proxy).
+5. **URLs**: els identificadors de reserva poden anar a la query string del JSONP, però **mai** noms
+   ni correus (quedarien als logs del servidor i del proxy).
 6. **Text de consentiment** al formulari, amb enllaç a la política de privacitat del centre.
 
 ---
@@ -526,7 +526,7 @@ Cada fase és un commit independent, amb les seves proves.
 - **E2E**: es poden apuntar a l'entorn desplegat canviant `baseURL`; el flux docent → CRP es pot
   executar contra el desplegament de proves amb un full de càlcul buit.
 - **RGPD**: una prova que comprova que la resposta pública no conté cap camp de `Reserva`
-  (correu, telèfon, nom, centre).
+  (correu, nom, centre).
 
 ---
 

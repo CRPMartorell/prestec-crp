@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS reserves (
   centre              VARCHAR(200) NOT NULL,
   municipi            VARCHAR(120) NOT NULL,
   correu              VARCHAR(200) NOT NULL,
-  telefon             VARCHAR(40)  NOT NULL,
   observacions        TEXT         NULL,
   estat               VARCHAR(30)  NOT NULL,
   data_hora_recollida VARCHAR(120) NULL,

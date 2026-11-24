@@ -173,10 +173,10 @@ export class LocalRepository implements CrpRepository {
       );
     }
     files.push('', '### PESTANYA 3: DISPONIBILITAT_I_RESERVES ###');
-    files.push('ID_Reserva,ID_Material,Tipus,Torn,Inici,Fi,Nom,Centre,Municipi,Correu,Telefon,Observacions,Estat,Recollida');
+    files.push('ID_Reserva,ID_Material,Tipus,Torn,Inici,Fi,Nom,Centre,Municipi,Correu,Observacions,Estat,Recollida');
     for (const r of this.reserves) {
       files.push(
-        [r.idReserva, r.idMaterial, r.tipus, r.tornAssignat ?? '', r.dataIniciSetmana ?? '', r.dataFiSetmana ?? '', r.nomSollicitant, r.centreEducatiu, r.municipi, r.correu, r.telefon, r.observacions, r.estatReserva, r.dataHoraRecollida ?? '']
+        [r.idReserva, r.idMaterial, r.tipus, r.tornAssignat ?? '', r.dataIniciSetmana ?? '', r.dataFiSetmana ?? '', r.nomSollicitant, r.centreEducatiu, r.municipi, r.correu, r.observacions, r.estatReserva, r.dataHoraRecollida ?? '']
           .map(v => `"${String(v).replace(/"/g, '""')}"`)
           .join(',')
       );

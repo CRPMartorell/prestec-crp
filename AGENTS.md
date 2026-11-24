@@ -13,7 +13,7 @@ pedagògiques** i **maquinària/equipament** als centres educatius.
 Dos requisits manen sobre la resta:
 
 1. **Privadesa RGPD de dues capes.** El catàleg públic és anònim i sense registre: només mostra
-   `Lliure`/`Ocupat`. Les dades personals (docent, centre, correu, telèfon) només existeixen al
+   `Lliure`/`Ocupat`. Les dades personals (docent, centre, correu electrònic) només existeixen al
    panell intern.
 2. **Dos models de préstec.** Els recursos pedagògics es presten per **6 torns tancats** del curs
    2026-2027; la maquinària, per **setmanes naturals** (dilluns–divendres).
@@ -166,7 +166,7 @@ Regles que cal respectar en qualsevol canvi:
   afegeix `recordatori_retorn` quan falten ≤ 2 dies per al retorn.
 - **Dates**: `dataInici`/`dataFinal` en `DD/MM/YYYY` per a la UI; `dataIniciISO`/`dataFinalISO` i
   les dates de setmana en `YYYY-MM-DD` per a la lògica.
-- **El catàleg públic no pot mostrar mai** noms, centres, correus ni telèfons.
+- **El catàleg públic no pot mostrar mai** noms, centres ni correus.
 
 ---
 

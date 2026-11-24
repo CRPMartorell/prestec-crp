@@ -133,7 +133,7 @@
     {
       "idReserva": "RES-2026-001", "idMaterial": "MAT-001", "tipus": "Recurs Pedagògic", "tornAssignat": "T-01",
       "nomSollicitant": "Marta Soler Garcia", "centreEducatiu": "Escola El Drac", "municipi": "Terrassa",
-      "correu": "msoler@escolaeldrac.cat", "telefon": "611223344",
+      "correu": "msoler@escolaeldrac.cat",
       "observacions": "Treballarem el projecte transversal de l'hort amb 3r i 4t de primària durant la tardor.",
       "estatReserva": "Concedida", "dataHoraRecollida": "14/09/2026 a les 10:30 h",
       "dataCreacio": "2026-09-02T09:15:00.000Z", "dataRetornPrevista": "2026-10-23"
@@ -141,7 +141,7 @@
     {
       "idReserva": "RES-2026-002", "idMaterial": "MAT-001", "tipus": "Recurs Pedagògic", "tornAssignat": "T-02",
       "nomSollicitant": "Jordi Rius Puig", "centreEducatiu": "Institut Joan Brossa", "municipi": "Sabadell",
-      "correu": "jrius@iesbrossa.cat", "telefon": "622334455",
+      "correu": "jrius@iesbrossa.cat",
       "observacions": "Projecte d'ecologia i compostatge a 1r d'ESO.",
       "estatReserva": "Pendent de Validació",
       "dataCreacio": "2026-09-08T14:20:00.000Z", "dataRetornPrevista": "2026-12-14"
@@ -149,7 +149,7 @@
     {
       "idReserva": "RES-2026-003", "idMaterial": "MAT-004", "tipus": "Recurs Pedagògic", "tornAssignat": "T-01",
       "nomSollicitant": "Carme Pons Rovira", "centreEducatiu": "Escola Nova de Rubí", "municipi": "Rubí",
-      "correu": "cpons@escolanova.cat", "telefon": "633445566",
+      "correu": "cpons@escolanova.cat",
       "observacions": "Taller de robòtica per racons a I5 i 1r de Primària.",
       "estatReserva": "Concedida", "dataHoraRecollida": "15/09/2026 a les 11:00 h",
       "dataCreacio": "2026-09-03T11:45:00.000Z", "dataRetornPrevista": "2026-10-23"
@@ -158,7 +158,7 @@
       "idReserva": "RES-2026-004", "idMaterial": "MAQ-001", "tipus": "Maquinària i Equipament",
       "dataIniciSetmana": "2026-10-05", "dataFiSetmana": "2026-10-12",
       "nomSollicitant": "Albert Vidal Canals", "centreEducatiu": "Institut Torre del Palau", "municipi": "Terrassa",
-      "correu": "avidal@torredelpalau.cat", "telefon": "644556677",
+      "correu": "avidal@torredelpalau.cat",
       "observacions": "Setmana de la Ciència: imprimirem prototips dissenyats per l'alumnat de tecnologia de 3r d'ESO.",
       "estatReserva": "Concedida", "dataHoraRecollida": "05/10/2026 a les 09:30 h",
       "dataCreacio": "2026-09-10T16:00:00.000Z", "dataRetornPrevista": "2026-10-12"
@@ -167,7 +167,7 @@
       "idReserva": "RES-2026-005", "idMaterial": "MAQ-002", "tipus": "Maquinària i Equipament",
       "dataIniciSetmana": "2026-11-09", "dataFiSetmana": "2026-11-16",
       "nomSollicitant": "Núria Bosch Mas", "centreEducatiu": "Escola Pau Casals", "municipi": "Sant Cugat del Vallès",
-      "correu": "nbosch@paucasals.cat", "telefon": "655667788",
+      "correu": "nbosch@paucasals.cat",
       "observacions": "Gravació del telenotícies del primer trimestre.",
       "estatReserva": "Pendent de Validació",
       "dataCreacio": "2026-09-12T18:10:00.000Z", "dataRetornPrevista": "2026-11-16"

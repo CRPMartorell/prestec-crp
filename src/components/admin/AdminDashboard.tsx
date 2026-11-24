@@ -375,7 +375,7 @@ function enviarRecordatoriDevolucio() {
                               {reserva.centreEducatiu} ({reserva.municipi})
                             </div>
                             <div className="text-[10px] text-slate-400 mt-0.5">
-                              ✉️ {reserva.correu} • 📞 {reserva.telefon}
+                              ✉️ {reserva.correu}
                             </div>
                             {reserva.observacions && (
                               <div className="mt-1 text-[11px] text-slate-500 italic bg-slate-50 p-1.5 rounded">

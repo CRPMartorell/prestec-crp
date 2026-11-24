@@ -16,7 +16,6 @@ const omplirFormulari = async (user: ReturnType<typeof userEvent.setup>) => {
     screen.getByPlaceholderText('Ex: nom@xtec.cat o nom@centre.cat'),
     'marta@escolaeldrac.cat'
   );
-  await user.type(screen.getByPlaceholderText('Ex: 612345678'), '611223344');
 };
 
 describe('ReservationModal', () => {
@@ -93,7 +92,6 @@ describe('ReservationModal', () => {
       screen.getByPlaceholderText('Ex: nom@xtec.cat o nom@centre.cat'),
       'marta@escolaeldrac.cat'
     );
-    await user.type(screen.getByPlaceholderText('Ex: 612345678'), '611223344');
     await user.click(screen.getByRole('button', { name: /Enviar Sol·licitud de Préstec/ }));
 
     expect(

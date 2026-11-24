@@ -70,7 +70,6 @@ final class Crp
             'centreEducatiu' => $r['centre'],
             'municipi' => $r['municipi'],
             'correu' => $r['correu'],
-            'telefon' => $r['telefon'],
             'observacions' => $r['observacions'] ?? '',
             'estatReserva' => $r['estat'],
             'dataHoraRecollida' => $r['data_hora_recollida'] ?? null,
@@ -174,7 +173,6 @@ final class Crp
         $centre = Http::text($d['centreEducatiu'] ?? null, 'centreEducatiu', 200);
         $municipi = Http::text($d['municipi'] ?? null, 'municipi', 120);
         $correu = Http::text($d['correu'] ?? null, 'correu', 200);
-        $telefon = Http::text($d['telefon'] ?? null, 'telefon', 40);
         $observacions = isset($d['observacions']) && is_string($d['observacions'])
             ? mb_substr(trim($d['observacions']), 0, 1000)
             : '';
@@ -182,11 +180,8 @@ final class Crp
         if (!filter_var($correu, FILTER_VALIDATE_EMAIL)) {
             Http::error('El correu no és vàlid', 422);
         }
-        if (strlen(preg_replace('/\D/', '', $telefon) ?? '') < 9) {
-            Http::error('El telèfon no és vàlid', 422);
-        }
 
-        return $this->db->transaccio(function (Db $db) use ($material, $esTorns, $torn, $inici, $fi, $nom, $centre, $municipi, $correu, $telefon, $observacions, $ip) {
+        return $this->db->transaccio(function (Db $db) use ($material, $esTorns, $torn, $inici, $fi, $nom, $centre, $municipi, $correu, $observacions, $ip) {
             $db->bloquejaMysql('materials', (string) $material['id']);
 
             if ($esTorns) {
@@ -229,7 +224,6 @@ final class Crp
                 'centre' => $centre,
                 'municipi' => $municipi,
                 'correu' => $correu,
-                'telefon' => $telefon,
                 'observacions' => $observacions,
                 'estat' => 'Pendent de Validació',
                 'data_hora_recollida' => null,
@@ -248,7 +242,6 @@ final class Crp
                 'centreEducatiu' => $centre,
                 'municipi' => $municipi,
                 'correu' => $correu,
-                'telefon' => $telefon,
                 'observacions' => $observacions,
                 'estatReserva' => 'Pendent de Validació',
                 'dataHoraRecollida' => null,
@@ -419,12 +412,12 @@ final class Crp
 
         $linies[] = '';
         $linies[] = '### PESTANYA 3: DISPONIBILITAT_I_RESERVES ###';
-        $linies[] = 'ID_Reserva,ID_Material,Tipus,Torn_Assignat,Data_Inici,Data_Fi,Nom_Sollicitant,Centre,Municipi,Correu,Telefon,Observacions,Estat,Data_Hora_Recollida';
+        $linies[] = 'ID_Reserva,ID_Material,Tipus,Torn_Assignat,Data_Inici,Data_Fi,Nom_Sollicitant,Centre,Municipi,Correu,Observacions,Estat,Data_Hora_Recollida';
         foreach ($reserves as $r) {
             $linies[] = implode(',', array_map([self::class, 'csv'], [
                 $r['id_reserva'], $r['id_material'], $r['tipus'], $r['torn_assignat'],
                 $r['data_inici_setmana'], $r['data_fi_setmana'], $r['nom_sollicitant'], $r['centre'],
-                $r['municipi'], $r['correu'], $r['telefon'], $r['observacions'], $r['estat'], $r['data_hora_recollida'],
+                $r['municipi'], $r['correu'], $r['observacions'], $r['estat'], $r['data_hora_recollida'],
             ]));
         }
 
@@ -459,7 +452,7 @@ final class Crp
             . '• Sol·licitant: ' . $reserva['nomSollicitant'] . "\n"
             . '• Centre: ' . $reserva['centreEducatiu'] . ' (' . $reserva['municipi'] . ")\n"
             . '• Període: ' . $periode . "\n"
-            . '• Contacte: ' . $reserva['correu'] . ' | ' . $reserva['telefon'] . "\n\n"
+            . '• Contacte: ' . $reserva['correu'] . "\n\n"
             . 'Accedeix al panell del CRP per validar-la.',
             $reserva['idReserva']
         );

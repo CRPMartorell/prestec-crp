@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Panell intern del CRP', () => {
   test('mostra les dades privades i compta les sol·licituds pendents', async ({ page }) => {
-    // Segona capa RGPD: el correu i el telèfon només són aquí
+    // Segona capa RGPD: el correu de contacte només és aquí
     await expect(page.getByRole('row').filter({ hasText: 'RES-2026-002' })).toContainText(
       'jrius@iesbrossa.cat'
     );

@@ -20,7 +20,6 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
   const [centreEducatiu, setCentreEducatiu] = useState('');
   const [municipi, setMunicipi] = useState('');
   const [correu, setCorreu] = useState('');
-  const [telefon, setTelefon] = useState('');
   const [observacions, setObservacions] = useState('');
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -71,7 +70,6 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
     if (!centreEducatiu.trim()) errs.centre = 'El nom del centre educatiu és obligatori.';
     if (!municipi.trim()) errs.municipi = 'El municipi és obligatori.';
     if (!correu.trim() || !correu.includes('@')) errs.correu = 'Cal un correu electrònic vàlid.';
-    if (!telefon.trim() || telefon.length < 9) errs.telefon = 'Cal un número de telèfon de contacte vàlid.';
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -95,7 +93,6 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
         centreEducatiu,
         municipi,
         correu,
-        telefon,
         observacions,
       });
 
@@ -365,22 +362,6 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
                       }`}
                     />
                     {errors.correu && <p className="text-xs text-rose-600 mt-1">{errors.correu}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Telèfon de contacte:
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="Ex: 612345678"
-                      value={telefon}
-                      onChange={(e) => setTelefon(e.target.value)}
-                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-hidden ${
-                        errors.telefon ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
-                      }`}
-                    />
-                    {errors.telefon && <p className="text-xs text-rose-600 mt-1">{errors.telefon}</p>}
                   </div>
 
                   <div className="sm:col-span-2">

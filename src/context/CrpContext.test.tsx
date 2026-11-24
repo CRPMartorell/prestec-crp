@@ -14,7 +14,6 @@ const reservaBase: NovaReserva = {
   centreEducatiu: 'Escola El Drac',
   municipi: 'Terrassa',
   correu: 'marta@escolaeldrac.cat',
-  telefon: '611223344',
   observacions: 'Projecte de nanociència a 4t de primària.',
 };
 
