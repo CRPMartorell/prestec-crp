@@ -1,7 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
+
+const arrelProjecte = fileURLToPath(new URL('.', import.meta.url));
 
 type AppBuild = 'all' | 'public' | 'private';
 
@@ -24,7 +27,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(arrelProjecte),
       },
     },
     build: {

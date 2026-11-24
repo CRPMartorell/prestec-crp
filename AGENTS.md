@@ -250,10 +250,8 @@ Repositori **trunk-based**: es treballa sobre `main` amb commits petits i atòmi
 3. **Sessions**: el panell depèn de la sessió de PHP; no hi ha "recorda'm" ni caducitat explícita.
 4. **Dependències no usades** (`@google/genai`, `express`, `dotenv`, `motion`, `tsx`, `esbuild`
    directe): restes de la plantilla d'AI Studio.
-5. `vite.config.ts` usa `__dirname`, que Vite avisa que deixarà de suportar-se amb el carregador
-   natiu. Canvi pendent: `import.meta.dirname`.
-6. `tsconfig.json` no té `strict`. Activar-lo implicarà correccions.
-7. Els modals no atrapen el focus ni es tanquen amb `Escape`.
+5. `tsconfig.json` no té `strict`. Activar-lo implicarà correccions.
+6. Els modals no atrapen el focus ni es tanquen amb `Escape`.
 
 ## 11. Full de ruta suggerit
 
