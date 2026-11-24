@@ -386,7 +386,7 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
               <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl flex items-start gap-2.5 text-xs text-blue-900">
                 <Shield className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong>Privadesa RGPD:</strong> Les teves dades personals queden allotjades exclusivament a la base de dades interna del CRP per gestionar la sol·licitud. En cap cas es publiquen ni es comparteixen al catàleg públic.
+                  <strong>Privadesa (RGPD):</strong> Les dades personals recollides són d'ús exclusiu del CRP per gestionar aquest préstec. En cap cas es publiquen al catàleg ni se cedeixen a tercers.
                 </span>
               </div>
 
