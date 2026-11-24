@@ -12,6 +12,8 @@ test-results/
 playwright-report/
 blob-report/
 .playwright/
+# Captures i snapshots del Playwright MCP
+.playwright-mcp/
 
 # Apps Script (credencials i configuració d'entorn)
 .clasprc.json

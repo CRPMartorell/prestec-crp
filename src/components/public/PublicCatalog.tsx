@@ -276,11 +276,15 @@ export const PublicCatalog: React.FC = () => {
         </div>
       )}
 
-      {/* Reservation Modal */}
-      <ReservationModal
-        material={materialPerReservar}
-        onClose={() => setMaterialPerReservar(null)}
-      />
+      {/* Reservation Modal: es desmunta en tancar perquè l'estat (formulari i
+          confirmació) no es quedi enganxat a la reserva següent. */}
+      {materialPerReservar && (
+        <ReservationModal
+          key={materialPerReservar.id}
+          material={materialPerReservar}
+          onClose={() => setMaterialPerReservar(null)}
+        />
+      )}
     </div>
   );
 };
