@@ -54,6 +54,7 @@ export const AdminDashboard: React.FC = () => {
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [isNewMaterial, setIsNewMaterial] = useState(false);
   const [errorMaterial, setErrorMaterial] = useState<string | null>(null);
+  const [missatgeMaterial, setMissatgeMaterial] = useState<string | null>(null);
   const [pujantImatge, setPujantImatge] = useState(false);
 
   // Trigger feedback
@@ -117,9 +118,37 @@ export const AdminDashboard: React.FC = () => {
       return;
     }
 
+    // Validació pròpia: el formulari és noValidate perquè qualsevol error es
+    // vegi dins del modal i no pas com un globus del navegador que passa
+    // desapercebut.
+    const faltes: string[] = [];
+    if (!material.id.trim()) faltes.push('el codi');
+    if (!material.nom.trim()) faltes.push('el nom');
+    if (!material.descripcio.trim()) faltes.push('la descripció');
+    if (!material.contingutMaleta.trim()) faltes.push('el contingut');
+    if (!material.urlImatge.trim()) faltes.push('la imatge');
+
+    if (faltes.length > 0) {
+      setErrorMaterial(`Falten camps obligatoris: ${faltes.join(', ')}.`);
+      return;
+    }
+
     setErrorMaterial(null);
-    setEditingMaterial(null);
-    await desarMaterial(material);
+    try {
+      await desarMaterial(material);
+      setEditingMaterial(null);
+      setMissatgeMaterial(
+        isNewMaterial
+          ? `Material «${material.nom}» creat correctament (${material.id}).`
+          : `Canvis desats a «${material.nom}».`
+      );
+    } catch (err) {
+      setErrorMaterial(
+        err instanceof Error && err.message
+          ? `No s'ha pogut desar: ${err.message}`
+          : "No s'ha pogut desar el material. Torna-ho a provar."
+      );
+    }
   };
 
   /** Codi següent lliure per al tipus indicat: MAT-007, MAQ-005… */
@@ -505,6 +534,7 @@ function enviarRecordatoriDevolucio() {
               onClick={() => {
                 setIsNewMaterial(true);
                 setErrorMaterial(null);
+                setMissatgeMaterial(null);
                 setEditingMaterial({
                   id: seguentCodi('Recurs Pedagògic'),
                   nom: '',
@@ -526,6 +556,24 @@ function enviarRecordatoriDevolucio() {
               <span>Afegir Nou Material</span>
             </button>
           </div>
+
+          {missatgeMaterial && (
+            <div
+              role="status"
+              className="flex items-start gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold"
+            >
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+              <span className="flex-1">{missatgeMaterial}</span>
+              <button
+                type="button"
+                onClick={() => setMissatgeMaterial(null)}
+                className="text-emerald-700 hover:text-emerald-900 font-bold"
+                aria-label="Tancar el missatge"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
@@ -592,6 +640,7 @@ function enviarRecordatoriDevolucio() {
                             onClick={() => {
                               setIsNewMaterial(false);
                               setErrorMaterial(null);
+                              setMissatgeMaterial(null);
                               setEditingMaterial(mat);
                             }}
                             className="p-1.5 text-slate-500 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors"
@@ -937,7 +986,7 @@ function enviarRecordatoriDevolucio() {
               Camps corresponents a les columnes A-J de la pestanya <code>Materials</code>.
             </p>
 
-            <form onSubmit={handleSaveMaterial} className="space-y-4">
+            <form onSubmit={handleSaveMaterial} noValidate className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Codi ID:</label>

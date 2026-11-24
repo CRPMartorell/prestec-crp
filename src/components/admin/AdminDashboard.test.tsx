@@ -55,5 +55,17 @@ describe('AdminDashboard · inventari', () => {
 
     const desat = crp.materials.find(m => m.nom === 'Material amb imatge');
     expect(desat?.urlImatge).toBe('blob:imatge-de-prova');
+    expect(screen.getByRole('status')).toHaveTextContent(/creat correctament/);
+  });
+
+  it('avisa dels camps que falten en lloc de no fer res', async () => {
+    const user = userEvent.setup();
+    renderWithCrp(<AdminDashboard />);
+
+    await user.click(await screen.findByRole('button', { name: /Inventari de Materials/ }));
+    await user.click(screen.getByRole('button', { name: /Afegir Nou Material/ }));
+    await user.click(screen.getByRole('button', { name: /Guardar Material/ }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/Falten camps obligatoris/);
   });
 });
