@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS notificacions (
   data_hora   VARCHAR(40)  NOT NULL,
   tipus       VARCHAR(40)  NOT NULL,
   destinatari VARCHAR(200) NOT NULL,
+  copia       VARCHAR(200) NULL,
   assumpte    VARCHAR(300) NOT NULL,
   cos         TEXT         NOT NULL,
   id_reserva  VARCHAR(20)  NULL

@@ -60,6 +60,7 @@ describe('CrpContext', () => {
     const notif = crp.notificacions[0];
     expect(notif.tipus).toBe('avis_crp');
     expect(notif.destinatari).toBe('crp-martorell@xtec.cat');
+    expect(notif.copia).toBe('marta@escolaeldrac.cat');
     expect(notif.cos).toContain('Marta Soler');
   });
 

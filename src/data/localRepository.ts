@@ -1,4 +1,4 @@
-import { Material, Reserva, EstatReserva } from '../types/crp';
+import { Material, Reserva, EstatReserva, NotificacioEmail } from '../types/crp';
 import { MATERIALS_DEFAULT, RESERVES_DEFAULT, TORNS_PEDAGOGICS_DEFAULT } from './defaultData';
 import { CatalegPublic, CrpRepository, NovaReserva, Panell, ResultatRecordatoris } from './CrpRepository';
 import { CORREU_CRP } from './contacte';
@@ -12,7 +12,7 @@ const clau = (m: string, t: string) => `${m}::${t}`;
 export class LocalRepository implements CrpRepository {
   private materials: Material[];
   private reserves: Reserva[];
-  private notificacions: { id: string; dataHora: string; tipus: string; destinatari: string; assumpte: string; cos: string; idReserva: string }[] = [];
+  private notificacions: NotificacioEmail[] = [];
   private comptador: number;
 
   constructor(dades?: { materials?: Material[]; reserves?: Reserva[] }) {
@@ -92,7 +92,8 @@ export class LocalRepository implements CrpRepository {
       CORREU_CRP,
       `Nova sol·licitud de préstec: ${material.id} - ${dades.centreEducatiu}`,
       `S'ha rebut una nova petició de préstec per a ${material.nom} (${material.id}) de ${dades.nomSollicitant} (${dades.centreEducatiu}).`,
-      idReserva
+      idReserva,
+      dades.correu
     );
 
     return structuredClone(reserva);
@@ -185,13 +186,21 @@ export class LocalRepository implements CrpRepository {
     return files.join('\r\n');
   }
 
-  private notifica(tipus: string, destinatari: string, assumpte: string, cos: string, idReserva: string) {
+  private notifica(
+    tipus: NotificacioEmail['tipus'],
+    destinatari: string,
+    assumpte: string,
+    cos: string,
+    idReserva: string,
+    copia: string | null = null
+  ) {
     this.notificacions = [
       {
         id: `NOTIF-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         dataHora: new Date().toISOString(),
         tipus,
         destinatari,
+        copia,
         assumpte,
         cos,
         idReserva,

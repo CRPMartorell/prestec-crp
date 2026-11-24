@@ -55,6 +55,8 @@ export interface NotificacioEmail {
   dataHora: string;
   tipus: 'avis_crp' | 'aprovacio_usuari' | 'denegacio_usuari' | 'recordatori_retorn';
   destinatari: string;
+  /** Adreça en còpia (Cc), si n'hi ha. */
+  copia?: string | null;
   assumpte: string;
   cos: string;
   idReserva: string;

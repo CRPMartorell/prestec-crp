@@ -87,6 +87,7 @@ final class Crp
             'dataHora' => $r['data_hora'],
             'tipus' => $r['tipus'],
             'destinatari' => $r['destinatari'],
+            'copia' => $r['copia'] ?? null,
             'assumpte' => $r['assumpte'],
             'cos' => $r['cos'],
             'idReserva' => $r['id_reserva'] ?? '',
@@ -458,23 +459,32 @@ final class Crp
             . '• Període: ' . $periode . "\n"
             . '• Contacte: ' . $reserva['correu'] . "\n\n"
             . 'Accedeix al panell del CRP per validar-la.',
-            $reserva['idReserva']
+            $reserva['idReserva'],
+            $reserva['correu']
         );
     }
 
-    private function notifica(Db $db, string $tipus, string $destinatari, string $assumpte, string $cos, string $idReserva): void
-    {
+    private function notifica(
+        Db $db,
+        string $tipus,
+        string $destinatari,
+        string $assumpte,
+        string $cos,
+        string $idReserva,
+        ?string $copia = null
+    ): void {
         $id = 'NOTIF-' . gmdate('YmdHis') . '-' . substr(bin2hex(random_bytes(4)), 0, 6);
         $db->insert('notificacions', [
             'id' => $id,
             'data_hora' => gmdate('c'),
             'tipus' => $tipus,
             'destinatari' => $destinatari,
+            'copia' => $copia,
             'assumpte' => $assumpte,
             'cos' => $cos,
             'id_reserva' => $idReserva,
         ]);
-        $this->correu->enviar($destinatari, $assumpte, $cos);
+        $this->correu->enviar($destinatari, $assumpte, $cos, $copia);
     }
 
     private function audita(Db $db, string $correu, string $accio, ?string $idReserva, ?string $detall): void

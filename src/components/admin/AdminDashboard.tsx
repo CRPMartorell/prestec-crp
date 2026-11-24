@@ -685,6 +685,9 @@ function enviarRecordatoriDevolucio() {
                     </div>
                     <div className="text-slate-600 font-mono text-[11px]">
                       Destinatari: <strong className="text-indigo-700">{notif.destinatari}</strong>
+                      {notif.copia && (
+                        <span className="text-slate-500"> · Còpia: {notif.copia}</span>
+                      )}
                     </div>
                     <pre className="mt-2 p-2.5 bg-white border border-slate-200 rounded-lg text-slate-700 font-sans text-xs whitespace-pre-wrap">
                       {notif.cos}
