@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { PublicCatalog } from './PublicCatalog';
@@ -44,5 +44,37 @@ describe('PublicCatalog', () => {
     await user.type(screen.getByPlaceholderText(/Cerca per nom/), 'zzzz');
 
     expect(screen.getByText('Cap recurs trobat')).toBeInTheDocument();
+  });
+
+  it('ofereix només els tres àmbits temàtics', async () => {
+    renderWithCrp(<PublicCatalog />);
+    await screen.findByText('Nanokit');
+
+    const select = screen.getByRole('combobox');
+    const opcions = within(select)
+      .getAllByRole('option')
+      .map(o => o.textContent);
+
+    expect(opcions).toEqual([
+      'Tots els àmbits temàtics',
+      'Tècnic i audiovisual',
+      'Impuls a la lectura',
+      'STEAM',
+    ]);
+  });
+
+  it('filtra per àmbit temàtic', async () => {
+    const user = userEvent.setup();
+    renderWithCrp(<PublicCatalog />);
+    await screen.findByText('Nanokit');
+
+    await user.selectOptions(screen.getByRole('combobox'), 'Tècnic i audiovisual');
+    expect(screen.getAllByRole('button', { name: /Reservar aquest Material/ })).toHaveLength(4);
+
+    await user.selectOptions(screen.getByRole('combobox'), 'Impuls a la lectura');
+    expect(screen.getAllByRole('button', { name: /Reservar aquest Material/ })).toHaveLength(1);
+
+    await user.selectOptions(screen.getByRole('combobox'), 'STEAM');
+    expect(screen.getAllByRole('button', { name: /Reservar aquest Material/ })).toHaveLength(5);
   });
 });

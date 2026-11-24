@@ -4,6 +4,7 @@ import { Material } from '../../types/crp';
 import { MaterialCard } from './MaterialCard';
 import { ReservationModal } from './ReservationModal';
 import { Search, Filter, Box, Wrench, Shield, Calendar, Sparkles, CheckCircle2, RefreshCw } from 'lucide-react';
+import { AMBIITS } from '../../data/ambits';
 
 export const PublicCatalog: React.FC = () => {
   const { materials, torns, getDisponibilitatMaterialTorn, carregant, error, recarregar } = useCrp();
@@ -13,12 +14,8 @@ export const PublicCatalog: React.FC = () => {
   const [nomésDisponibles, setNomésDisponibles] = useState(false);
   const [materialPerReservar, setMaterialPerReservar] = useState<Material | null>(null);
 
-  // Extract unique ambits
-  const ambits = useMemo(() => {
-    const set = new Set<string>();
-    materials.forEach(m => set.add(m.ambit));
-    return Array.from(set).sort();
-  }, [materials]);
+  // Llista tancada d'àmbits: no depèn dels materials carregats.
+  const ambits = AMBIITS;
 
   // Filter materials
   const materialsFiltrats = useMemo(() => {

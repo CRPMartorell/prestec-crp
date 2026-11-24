@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCrp } from '../../context/CrpContext';
 import { Reserva, Material, EstatReserva } from '../../types/crp';
+import { AMBIITS } from '../../data/ambits';
 import {
   Inbox,
   CheckCircle2,
@@ -934,14 +935,16 @@ function enviarRecordatoriDevolucio() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Àmbit Temàtic:</label>
-                  <input
-                    type="text"
+                  <select
                     value={editingMaterial.ambit}
                     onChange={(e) => setEditingMaterial({ ...editingMaterial, ambit: e.target.value })}
                     required
-                    placeholder="Ex: Robòtica, Ciències Naturals..."
                     className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden"
-                  />
+                  >
+                    {AMBIITS.map(ambit => (
+                      <option key={ambit} value={ambit}>{ambit}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Estat General:</label>

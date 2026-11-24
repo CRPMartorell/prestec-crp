@@ -49,4 +49,23 @@ test.describe('Catàleg públic', () => {
 
     await expect(page.getByText('Cap recurs trobat')).toBeVisible();
   });
+
+  test('només ofereix els tres àmbits temàtics', async ({ page }) => {
+    await expect(page.getByText('Nanokit')).toBeVisible({ timeout: 15000 });
+
+    const select = page.getByRole('combobox');
+    await expect(select.locator('option')).toHaveCount(4); // «Tots» + 3 àmbits
+    await expect(select.locator('option')).toHaveText([
+      'Tots els àmbits temàtics',
+      'Tècnic i audiovisual',
+      'Impuls a la lectura',
+      'STEAM',
+    ]);
+
+    await select.selectOption({ label: 'Tècnic i audiovisual' });
+    await expect(page.getByRole('button', { name: 'Reservar aquest Material' })).toHaveCount(4);
+
+    await select.selectOption({ label: 'STEAM' });
+    await expect(page.getByRole('button', { name: 'Reservar aquest Material' })).toHaveCount(5);
+  });
 });
