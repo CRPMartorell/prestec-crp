@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Material, TornPedagogic } from '../../types/crp';
 import { useCrp } from '../../context/CrpContext';
+import { calculaDataFi, DIES_PRESTEC_MAQUINARIA, esCapDeSetmana } from '../../data/periodes';
 import { X, Calendar, User, School, MapPin, Mail, Phone, MessageSquare, CheckCircle, Shield, AlertCircle, ArrowRight } from 'lucide-react';
 
 interface ReservationModalProps {
@@ -45,13 +46,24 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
       }
     } else {
       if (!dataIniciSetmana) {
-        errs.dataInici = 'Indica la data d’inici (dilluns).';
+        errs.dataInici = 'Indica la data d’inici.';
+      } else if (esCapDeSetmana(dataIniciSetmana)) {
+        errs.dataInici = 'La data d’inici no pot ser dissabte ni diumenge.';
       }
+
       if (!dataFiSetmana) {
-        errs.dataFi = 'Indica la data de finalització (divendres).';
+        errs.dataFi = 'La data de finalització es calcula automàticament.';
+      } else if (esCapDeSetmana(dataFiSetmana)) {
+        errs.dataFi = 'La data de finalització no pot ser dissabte ni diumenge.';
       }
-      if (dataIniciSetmana && dataFiSetmana && new Date(dataIniciSetmana) > new Date(dataFiSetmana)) {
-        errs.dates = 'La data d’inici ha de ser anterior a la data de finalització.';
+
+      if (
+        dataIniciSetmana &&
+        dataFiSetmana &&
+        !esCapDeSetmana(dataIniciSetmana) &&
+        dataFiSetmana !== calculaDataFi(dataIniciSetmana)
+      ) {
+        errs.dates = `El préstec és de ${DIES_PRESTEC_MAQUINARIA} dies: la data de finalització ha de ser ${calculaDataFi(dataIniciSetmana)}.`;
       }
     }
 
@@ -225,30 +237,52 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
                 ) : (
                   <div>
                     <p className="text-xs text-slate-500 mb-3">
-                      La maquinària es reserva per setmanes naturals (de dilluns a divendres segons necessitat).
+                      La maquinària es presta <strong>{DIES_PRESTEC_MAQUINARIA} dies</strong>. Tria el dia d’inici
+                      (de dilluns a divendres) i la data de finalització es calcula sola: el mateix dia de la
+                      setmana següent.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          Data d'inici (Dilluns):
+                        <label htmlFor="dataInici" className="block text-xs font-semibold text-slate-700 mb-1">
+                          Data d'inici (de dilluns a divendres):
                         </label>
                         <input
+                          id="dataInici"
                           type="date"
                           value={dataIniciSetmana}
-                          onChange={(e) => setDataIniciSetmana(e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                          onChange={(e) => {
+                            const valor = e.target.value;
+                            setDataIniciSetmana(valor);
+                            setDataFiSetmana(valor && !esCapDeSetmana(valor) ? calculaDataFi(valor) : '');
+                            setErrors(prev => ({
+                              ...prev,
+                              dataInici:
+                                valor && esCapDeSetmana(valor)
+                                  ? 'La data d’inici no pot ser dissabte ni diumenge.'
+                                  : '',
+                            }));
+                          }}
+                          className={`w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-hidden ${
+                            errors.dataInici ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+                          }`}
                         />
+                        {errors.dataInici && <p className="text-xs text-rose-600 mt-1">{errors.dataInici}</p>}
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          Data de finalització (Divendres):
+                        <label htmlFor="dataFi" className="block text-xs font-semibold text-slate-700 mb-1">
+                          Data de finalització ({DIES_PRESTEC_MAQUINARIA} dies, calculada):
                         </label>
                         <input
+                          id="dataFi"
                           type="date"
                           value={dataFiSetmana}
-                          onChange={(e) => setDataFiSetmana(e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                          readOnly
+                          tabIndex={-1}
+                          className={`w-full px-3 py-2 border rounded-xl text-sm bg-slate-50 text-slate-700 cursor-default outline-hidden ${
+                            errors.dataFi ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+                          }`}
                         />
+                        {errors.dataFi && <p className="text-xs text-rose-600 mt-1">{errors.dataFi}</p>}
                       </div>
                     </div>
                     {errors.dates && (

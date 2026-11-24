@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ReservationModal } from './ReservationModal';
@@ -59,5 +59,45 @@ describe('ReservationModal', () => {
     const tornOcupat = await screen.findByRole('button', { name: /T-01/ });
     expect(tornOcupat).toBeDisabled();
     expect(screen.getByRole('button', { name: /T-03/ })).toBeEnabled();
+  });
+
+  it('calcula la data de fi a 7 dies en triar la data d’inici', async () => {
+    renderWithCrp(<ReservationModal material={MATERIALS_DEFAULT[6]} onClose={vi.fn()} />);
+
+    const inici = screen.getByLabelText(/Data d'inici/) as HTMLInputElement;
+    const fi = screen.getByLabelText(/Data de finalització/) as HTMLInputElement;
+
+    fireEvent.change(inici, { target: { value: '2026-11-09' } }); // dilluns
+    expect(fi.value).toBe('2026-11-16'); // dilluns següent
+    expect(fi).toHaveAttribute('readonly');
+
+    fireEvent.change(inici, { target: { value: '2026-11-13' } }); // divendres
+    expect(fi.value).toBe('2026-11-20');
+  });
+
+  it('bloqueja un període que comença en cap de setmana', async () => {
+    const user = userEvent.setup();
+    renderWithCrp(<ReservationModal material={MATERIALS_DEFAULT[6]} onClose={vi.fn()} />);
+
+    const inici = screen.getByLabelText(/Data d'inici/) as HTMLInputElement;
+    fireEvent.change(inici, { target: { value: '2026-11-14' } }); // dissabte
+    expect((screen.getByLabelText(/Data de finalització/) as HTMLInputElement).value).toBe('');
+
+    await user.type(screen.getByPlaceholderText('Ex: Montserrat Soler i Puig'), 'Marta Soler');
+    await user.type(
+      screen.getByPlaceholderText('Ex: Escola El Pi Gros / Institut Ramon Muntaner'),
+      'Escola El Drac'
+    );
+    await user.type(screen.getByPlaceholderText('Ex: Terrassa, Sabadell, Rubí...'), 'Terrassa');
+    await user.type(
+      screen.getByPlaceholderText('Ex: nom@xtec.cat o nom@centre.cat'),
+      'marta@escolaeldrac.cat'
+    );
+    await user.type(screen.getByPlaceholderText('Ex: 612345678'), '611223344');
+    await user.click(screen.getByRole('button', { name: /Enviar Sol·licitud de Préstec/ }));
+
+    expect(
+      await screen.findByText('La data d’inici no pot ser dissabte ni diumenge.')
+    ).toBeInTheDocument();
   });
 });

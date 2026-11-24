@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Material } from '../../types/crp';
 import { useCrp } from '../../context/CrpContext';
+import { DIES_PRESTEC_MAQUINARIA } from '../../data/periodes';
 import { FileText, Calendar, Box, ExternalLink, CheckCircle2, XCircle, Info, ChevronDown, ChevronUp, Wrench, Sparkles } from 'lucide-react';
 
 interface MaterialCardProps {
@@ -162,9 +163,9 @@ export const MaterialCard: React.FC<MaterialCardProps> = ({ material, onReservar
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-600 mb-4 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>Préstec setmanal de Dilluns a Divendres</span>
+                <span>Préstec de {DIES_PRESTEC_MAQUINARIA} dies</span>
               </span>
-              <span className="text-slate-400 font-mono text-[11px]">Setmanes naturals</span>
+              <span className="text-slate-400 font-mono text-[11px]">De dilluns a divendres</span>
             </div>
           )}
 

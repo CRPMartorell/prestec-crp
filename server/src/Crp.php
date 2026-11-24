@@ -8,11 +8,23 @@ declare(strict_types=1);
  */
 final class Crp
 {
+    /** Dies de préstec per als equips que es reserven per dates. */
+    public const DIES_MAQUINARIA = 7;
+
     public function __construct(
         private Db $db,
         private array $config,
         private Correu $correu,
     ) {
+    }
+
+    private static function esCapDeSetmana(string $iso): bool
+    {
+        $data = DateTimeImmutable::createFromFormat('!Y-m-d', $iso);
+        if ($data === false) {
+            return false;
+        }
+        return (int) $data->format('N') >= 6;
     }
 
     // ---------- Mapatge ----------
@@ -144,8 +156,17 @@ final class Crp
                     Http::error('El camp ' . $camp . ' ha de tenir format YYYY-MM-DD', 422);
                 }
             }
-            if ($inici > $fi) {
-                Http::error('La data d\'inici ha de ser anterior a la de finalització', 422);
+
+            if (self::esCapDeSetmana((string) $inici) || self::esCapDeSetmana((string) $fi)) {
+                Http::error('El període de préstec no pot començar ni acabar en dissabte o diumenge', 422);
+            }
+
+            $esperat = (new DateTimeImmutable((string) $inici))->modify('+' . self::DIES_MAQUINARIA . ' days')->format('Y-m-d');
+            if ((string) $fi !== $esperat) {
+                Http::error(
+                    'El préstec de maquinària és de ' . self::DIES_MAQUINARIA . ' dies: la data de finalització ha de ser ' . $esperat,
+                    422
+                );
             }
         }
 

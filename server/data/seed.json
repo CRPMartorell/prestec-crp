@@ -156,21 +156,21 @@
     },
     {
       "idReserva": "RES-2026-004", "idMaterial": "MAQ-001", "tipus": "Maquinària i Equipament",
-      "dataIniciSetmana": "2026-10-05", "dataFiSetmana": "2026-10-09",
+      "dataIniciSetmana": "2026-10-05", "dataFiSetmana": "2026-10-12",
       "nomSollicitant": "Albert Vidal Canals", "centreEducatiu": "Institut Torre del Palau", "municipi": "Terrassa",
       "correu": "avidal@torredelpalau.cat", "telefon": "644556677",
       "observacions": "Setmana de la Ciència: imprimirem prototips dissenyats per l'alumnat de tecnologia de 3r d'ESO.",
       "estatReserva": "Concedida", "dataHoraRecollida": "05/10/2026 a les 09:30 h",
-      "dataCreacio": "2026-09-10T16:00:00.000Z", "dataRetornPrevista": "2026-10-09"
+      "dataCreacio": "2026-09-10T16:00:00.000Z", "dataRetornPrevista": "2026-10-12"
     },
     {
       "idReserva": "RES-2026-005", "idMaterial": "MAQ-002", "tipus": "Maquinària i Equipament",
-      "dataIniciSetmana": "2026-11-09", "dataFiSetmana": "2026-11-13",
+      "dataIniciSetmana": "2026-11-09", "dataFiSetmana": "2026-11-16",
       "nomSollicitant": "Núria Bosch Mas", "centreEducatiu": "Escola Pau Casals", "municipi": "Sant Cugat del Vallès",
       "correu": "nbosch@paucasals.cat", "telefon": "655667788",
       "observacions": "Gravació del telenotícies del primer trimestre.",
       "estatReserva": "Pendent de Validació",
-      "dataCreacio": "2026-09-12T18:10:00.000Z", "dataRetornPrevista": "2026-11-13"
+      "dataCreacio": "2026-09-12T18:10:00.000Z", "dataRetornPrevista": "2026-11-16"
     }
   ]
 }
