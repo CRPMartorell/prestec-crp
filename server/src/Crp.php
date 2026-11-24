@@ -42,6 +42,8 @@ final class Crp
             'urlGuiaDrive' => $r['url_guia'],
             'modelPrestec' => $r['model_prestec'],
             'estatGeneral' => $r['estat_general'],
+            'mostraContingut' => !isset($r['mostra_contingut']) || (int) $r['mostra_contingut'] === 1,
+            'mostraGuia' => !isset($r['mostra_guia']) || (int) $r['mostra_guia'] === 1,
         ];
     }
 
@@ -331,6 +333,8 @@ final class Crp
             'url_guia' => Http::text($m['urlGuiaDrive'] ?? null, 'urlGuiaDrive', 600),
             'model_prestec' => Http::text($m['modelPrestec'] ?? null, 'modelPrestec', 20),
             'estat_general' => Http::text($m['estatGeneral'] ?? null, 'estatGeneral', 30),
+            'mostra_contingut' => isset($m['mostraContingut']) ? ((bool) $m['mostraContingut'] ? 1 : 0) : 1,
+            'mostra_guia' => isset($m['mostraGuia']) ? ((bool) $m['mostraGuia'] ? 1 : 0) : 1,
         ];
 
         $this->db->transaccio(function (Db $db) use ($fila, $usuari) {

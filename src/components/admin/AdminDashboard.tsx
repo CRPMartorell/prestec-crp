@@ -475,6 +475,8 @@ function enviarRecordatoriDevolucio() {
                   urlGuiaDrive: 'https://drive.google.com/',
                   modelPrestec: 'Torns',
                   estatGeneral: 'Actiu',
+                  mostraContingut: true,
+                  mostraGuia: true,
                 });
               }}
               className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-xs transition-colors"
@@ -990,9 +992,19 @@ function enviarRecordatoriDevolucio() {
                   value={editingMaterial.contingutMaleta}
                   onChange={(e) => setEditingMaterial({ ...editingMaterial, contingutMaleta: e.target.value })}
                   required
+                  disabled={editingMaterial.mostraContingut === false}
                   placeholder="Llistat detallat de peces, guies i components..."
-                  className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                  className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden disabled:bg-slate-100 disabled:text-slate-400"
                 />
+                <label className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={editingMaterial.mostraContingut !== false}
+                    onChange={(e) => setEditingMaterial({ ...editingMaterial, mostraContingut: e.target.checked })}
+                    className="w-4 h-4 rounded text-indigo-600 border-slate-300"
+                  />
+                  Mostrar «Veure contingut de la maleta» a la fitxa pública
+                </label>
               </div>
 
               <div>
@@ -1002,8 +1014,18 @@ function enviarRecordatoriDevolucio() {
                   value={editingMaterial.urlGuiaDrive}
                   onChange={(e) => setEditingMaterial({ ...editingMaterial, urlGuiaDrive: e.target.value })}
                   required
-                  className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                  disabled={editingMaterial.mostraGuia === false}
+                  className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden disabled:bg-slate-100 disabled:text-slate-400"
                 />
+                <label className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={editingMaterial.mostraGuia !== false}
+                    onChange={(e) => setEditingMaterial({ ...editingMaterial, mostraGuia: e.target.checked })}
+                    className="w-4 h-4 rounded text-indigo-600 border-slate-300"
+                  />
+                  Mostrar l'enllaç al dossier a la fitxa pública
+                </label>
               </div>
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">

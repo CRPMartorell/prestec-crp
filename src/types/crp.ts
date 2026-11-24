@@ -17,6 +17,10 @@ export interface Material {
   urlGuiaDrive: string;
   modelPrestec: ModelPrestec;
   estatGeneral: EstatGeneralMaterial;
+  /** Si és fals, la fitxa no mostra el desplegable «Veure contingut de la maleta». */
+  mostraContingut?: boolean;
+  /** Si és fals, la fitxa no mostra l'enllaç al dossier o guia. */
+  mostraGuia?: boolean;
 }
 
 export interface TornPedagogic {

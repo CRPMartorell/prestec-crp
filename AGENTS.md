@@ -150,7 +150,7 @@ La persistència real és al servidor: `server/` amb PDO (MySQL o SQLite).
 
 | Tipus | Camps | Equivalent a Sheets |
 | --- | --- | --- |
-| `Material` | `id`, `nom`, `tipus`, `ambit`, `urlImatge`, `descripcio`, `contingutMaleta`, `urlGuiaDrive`, `modelPrestec`, `estatGeneral` | Pestanya `Materials` (A–J) |
+| `Material` | `id`, `nom`, `tipus`, `ambit`, `urlImatge`, `descripcio`, `contingutMaleta`, `urlGuiaDrive`, `modelPrestec`, `estatGeneral`, `mostraContingut?`, `mostraGuia?` | Pestanya `Materials` (A–J) |
 | `TornPedagogic` | `id` T-01…T-06, `nom`, `dataInici`, `dataFinal`, ISO | Pestanya `Torns_Pedagogics` |
 | `Reserva` | `idReserva`, `idMaterial`, `tipus`, `tornAssignat` o dates de setmana, dades personals, `estatReserva`, `dataHoraRecollida`, `dataRetornPrevista` | Pestanya `Disponibilitat_i_Reserves` (A–N) |
 | `NotificacioEmail` | `id`, `dataHora`, `tipus`, `destinatari`, `assumpte`, `cos`, `idReserva` | Registre de correus (simulació de `MailApp`) |

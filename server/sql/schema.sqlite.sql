@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS materials (
   contingut     TEXT NOT NULL,
   url_guia      TEXT NOT NULL,
   model_prestec TEXT NOT NULL,
-  estat_general TEXT NOT NULL
+  estat_general TEXT NOT NULL,
+  mostra_contingut INTEGER NULL DEFAULT 1,
+  mostra_guia     INTEGER NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS torns (

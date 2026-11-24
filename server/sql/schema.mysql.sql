@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS materials (
   contingut     TEXT         NOT NULL,
   url_guia      VARCHAR(600) NOT NULL,
   model_prestec VARCHAR(20)  NOT NULL,
-  estat_general VARCHAR(30)  NOT NULL
+  estat_general VARCHAR(30)  NOT NULL,
+  mostra_contingut TINYINT(1) NULL DEFAULT 1,
+  mostra_guia      TINYINT(1) NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS torns (

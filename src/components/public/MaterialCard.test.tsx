@@ -46,4 +46,29 @@ describe('MaterialCard', () => {
 
     expect(onReservar).toHaveBeenCalledWith(MATERIALS_DEFAULT[1]);
   });
+
+  it('amaga el contingut i l’enllaç quan el material ho té desactivat', async () => {
+    renderWithCrp(
+      <MaterialCard
+        material={{ ...MATERIALS_DEFAULT[0], mostraContingut: false, mostraGuia: false }}
+        onReservar={vi.fn()}
+      />
+    );
+
+    await screen.findByText('4 de 6 torns lliures');
+
+    expect(
+      screen.queryByRole('button', { name: /Veure contingut de la maleta/ })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Dossier Pedagògic/ })).not.toBeInTheDocument();
+  });
+
+  it('mostra el contingut i l’enllaç per defecte', async () => {
+    renderWithCrp(<MaterialCard material={MATERIALS_DEFAULT[0]} onReservar={vi.fn()} />);
+
+    await screen.findByText('4 de 6 torns lliures');
+
+    expect(screen.getByRole('button', { name: /Veure contingut de la maleta/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Dossier Pedagògic/ })).toBeInTheDocument();
+  });
 });
