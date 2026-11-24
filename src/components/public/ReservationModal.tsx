@@ -316,6 +316,25 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
                     {errors.nom && <p className="text-xs text-rose-600 mt-1">{errors.nom}</p>}
                   </div>
 
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Correu electrònic de la persona responsable:
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="Ex: nom@xtec.cat o nom@centre.cat"
+                      value={correu}
+                      onChange={(e) => setCorreu(e.target.value)}
+                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-hidden ${
+                        errors.correu ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
+                      }`}
+                    />
+                    {errors.correu && <p className="text-xs text-rose-600 mt-1">{errors.correu}</p>}
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      És l’adreça on el CRP enviarà la confirmació i els avisos del préstec.
+                    </p>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       Centre Educatiu:
@@ -346,22 +365,6 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
                       }`}
                     />
                     {errors.municipi && <p className="text-xs text-rose-600 mt-1">{errors.municipi}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Correu electrònic:
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="Ex: nom@xtec.cat o nom@centre.cat"
-                      value={correu}
-                      onChange={(e) => setCorreu(e.target.value)}
-                      className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-hidden ${
-                        errors.correu ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200'
-                      }`}
-                    />
-                    {errors.correu && <p className="text-xs text-rose-600 mt-1">{errors.correu}</p>}
                   </div>
 
                   <div className="sm:col-span-2">

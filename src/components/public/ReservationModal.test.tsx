@@ -30,6 +30,17 @@ describe('ReservationModal', () => {
     expect(screen.getByText('El nom del centre educatiu és obligatori.')).toBeInTheDocument();
   });
 
+  it('posa el correu de la persona responsable just després del nom', () => {
+    renderWithCrp(<ReservationModal material={MATERIALS_DEFAULT[1]} onClose={vi.fn()} />);
+
+    const nom = screen.getByPlaceholderText('Ex: Montserrat Soler i Puig');
+    const correu = screen.getByPlaceholderText('Ex: nom@xtec.cat o nom@centre.cat');
+
+    // El correu ha de venir després del nom en l'ordre del document.
+    expect(nom.compareDocumentPosition(correu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByText('Correu electrònic de la persona responsable:')).toBeInTheDocument();
+  });
+
   it('crea la reserva i mostra el codi de seguiment', async () => {
     const user = userEvent.setup();
     const { crp } = renderWithCrp(
