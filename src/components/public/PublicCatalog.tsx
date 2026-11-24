@@ -117,11 +117,12 @@ export const PublicCatalog: React.FC = () => {
             <span>Accés Lliure sense Registre • Privadesa RGPD Garantida</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
-            Catàleg de Préstec de Recursos Pedagògics i Maquinària
+            Catàleg de Préstec de Recursos Pedagògics Baix Llobregat VII
           </h2>
           <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-6">
-            Els centres educatius i el professorat podeu consultar la disponibilitat dels recursos de manera anònima. 
-            Les maletes pedagògiques es presten en <strong>6 torns escolars</strong> prefixats i l'equipament tecnològic per <strong>setmanes</strong> puntuals.
+            Els centres educatius i el professorat podeu consultar la disponibilitat dels recursos. Els
+            recursos pedagògics es presten en <strong>6 torns escolars</strong> prefixats i la maquinària o
+            equipament tecnològic per <strong>setmanes</strong> puntuals.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">

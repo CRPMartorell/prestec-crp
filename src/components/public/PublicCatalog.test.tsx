@@ -5,6 +5,19 @@ import { PublicCatalog } from './PublicCatalog';
 import { renderWithCrp } from '../../test/utils';
 
 describe('PublicCatalog', () => {
+  it('mostra el títol i el text de presentació del CRP', async () => {
+    renderWithCrp(<PublicCatalog />);
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Catàleg de Préstec de Recursos Pedagògics Baix Llobregat VII',
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Els centres educatius i el professorat podeu consultar la disponibilitat dels recursos\./)
+    ).toBeInTheDocument();
+  });
+
   it('mostra tot el catàleg públic', async () => {
     renderWithCrp(<PublicCatalog />);
 

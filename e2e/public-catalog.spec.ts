@@ -9,7 +9,9 @@ test.beforeEach(async ({ page }) => {
 test.describe('Catàleg públic', () => {
   test('mostra el catàleg anònim amb tots els materials', async ({ page }) => {
     await expect(
-      page.getByRole('heading', { name: 'Catàleg de Préstec de Recursos Pedagògics i Maquinària' })
+      page.getByRole('heading', {
+        name: 'Catàleg de Préstec de Recursos Pedagògics Baix Llobregat VII',
+      })
     ).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole('button', { name: 'Reservar aquest Material' })).toHaveCount(10);
     // Cap dada personal al catàleg públic
