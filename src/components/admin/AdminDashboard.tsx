@@ -1052,11 +1052,14 @@ function enviarRecordatoriDevolucio() {
                   O enllaç directe a la imatge:
                 </label>
                 <input
-                  type="url"
+                  // type="text" i no "url": les imatges pujades es desen com a
+                  // ruta relativa (/uploads/...) i el navegador la rebutjaria.
+                  type="text"
+                  inputMode="url"
                   value={editingMaterial.urlImatge}
                   onChange={(e) => setEditingMaterial({ ...editingMaterial, urlImatge: e.target.value })}
                   required
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://... o /uploads/..."
                   className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden"
                 />
               </div>

@@ -29,4 +29,31 @@ describe('AdminDashboard · inventari', () => {
 
     expect(await screen.findByDisplayValue('blob:imatge-de-prova')).toBeInTheDocument();
   });
+
+  it('desa el material amb la imatge pujada', async () => {
+    const user = userEvent.setup();
+    const { crp } = renderWithCrp(<AdminDashboard />);
+
+    await user.click(await screen.findByRole('button', { name: /Inventari de Materials/ }));
+    await user.click(screen.getByRole('button', { name: /Afegir Nou Material/ }));
+
+    await user.upload(
+      screen.getByLabelText(/Imatge de portada/),
+      new File(['contingut'], 'foto.png', { type: 'image/png' })
+    );
+    await user.type(
+      screen.getByPlaceholderText('Ex: Maleta de Robòtica Bee-Bot'),
+      'Material amb imatge'
+    );
+    const [descripcio, contingut] = Array.from(
+      document.querySelectorAll('form textarea')
+    ) as HTMLTextAreaElement[];
+    await user.type(descripcio, 'Descripció');
+    await user.type(contingut, 'Contingut');
+
+    await user.click(screen.getByRole('button', { name: /Guardar Material/ }));
+
+    const desat = crp.materials.find(m => m.nom === 'Material amb imatge');
+    expect(desat?.urlImatge).toBe('blob:imatge-de-prova');
+  });
 });
