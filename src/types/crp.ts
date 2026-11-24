@@ -2,7 +2,7 @@ export type TipusMaterial = 'Recurs Pedagògic' | 'Maquinària i Equipament';
 
 export type ModelPrestec = 'Torns' | 'Setmanes';
 
-export type EstatGeneralMaterial = 'Actiu' | 'En Manteniment' | 'Baixa';
+export type EstatGeneralMaterial = 'Actiu' | 'En Manteniment' | 'Baixa' | 'Esborrany';
 
 export type EstatReserva = 'Pendent de Validació' | 'Concedida' | 'Denegada' | 'Finalitzada';
 

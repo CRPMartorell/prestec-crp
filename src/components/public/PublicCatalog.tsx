@@ -17,9 +17,15 @@ export const PublicCatalog: React.FC = () => {
   // Llista tancada d'àmbits: no depèn dels materials carregats.
   const ambits = AMBIITS;
 
+  // Els esborranys no es publiquen: només existeixen al panell intern.
+  const materialsPublicats = useMemo(
+    () => materials.filter(m => m.estatGeneral !== 'Esborrany'),
+    [materials]
+  );
+
   // Filter materials
   const materialsFiltrats = useMemo(() => {
-    return materials.filter(m => {
+    return materialsPublicats.filter(m => {
       // Search term
       if (cerca.trim()) {
         const query = cerca.toLowerCase();
@@ -54,7 +60,7 @@ export const PublicCatalog: React.FC = () => {
 
       return true;
     });
-  }, [materials, cerca, filtreTipus, filtreAmbit, nomésDisponibles, torns, getDisponibilitatMaterialTorn]);
+  }, [materialsPublicats, cerca, filtreTipus, filtreAmbit, nomésDisponibles, torns, getDisponibilitatMaterialTorn]);
 
   const resetFilters = () => {
     setCerca('');

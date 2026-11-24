@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { PublicCatalog } from './PublicCatalog';
 import { renderWithCrp } from '../../test/utils';
+import { LocalRepository } from '../../data/localRepository';
+import { MATERIALS_DEFAULT, RESERVES_DEFAULT } from '../../data/defaultData';
 
 describe('PublicCatalog', () => {
   it('mostra el títol i el text de presentació del CRP', async () => {
@@ -125,5 +127,26 @@ describe('PublicCatalog', () => {
     ).toBeInTheDocument();
     expect(screen.queryByText('Sol·licitud Enregistrada!')).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText('Ex: Montserrat Soler i Puig')).toHaveValue('');
+  });
+
+  it('no publica els materials en esborrany', async () => {
+    const repository = new LocalRepository({
+      materials: [
+        ...MATERIALS_DEFAULT,
+        {
+          ...MATERIALS_DEFAULT[0],
+          id: 'MAT-099',
+          nom: 'Esborrany intern',
+          estatGeneral: 'Esborrany',
+        },
+      ],
+      reserves: RESERVES_DEFAULT,
+    });
+
+    renderWithCrp(<PublicCatalog />, { repository });
+    await screen.findByText('Nanokit');
+
+    expect(screen.queryByText('Esborrany intern')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /Reservar aquest Material/ })).toHaveLength(10);
   });
 });
