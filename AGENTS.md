@@ -51,6 +51,8 @@ npm run dev              # el mateix que `local`
 npm run dev:web          # només Vite (:3000)
 npm run dev:api          # només PHP (:8080)
 npm run setup            # crea/actualitza la base i l'usuari del CRP
+npm run doctor           # diagnòstic: node, php, base de dades i ports
+npm run crear-usuari -- <correu> <contrasenya> [nom]   # usuari del panell
 npm run build            # build de les dues pàgines (dist/)
 npm run build:public     # només catàleg -> dist/public/
 npm run build:private    # només panell  -> dist/private/
@@ -58,7 +60,7 @@ npm run check:bundle     # comprova que dist/public no contingui el panell
 npm run deploy:prep      # munta deploy/ per pujar per FTP a Hetzner
 npm run preview          # previsualitza el build
 npm run lint             # tsc --noEmit
-npm test                 # Vitest (21 proves)
+npm test                 # Vitest (39 proves)
 npm run test:watch       # Vitest en mode watch
 npm run test:e2e     # Playwright (11 proves)
 npm run verify       # lint + test + build:public + check:bundle
@@ -72,7 +74,7 @@ npm run test:e2e:install
 
 ### Números actuals
 
-- **21 proves unitàries** en 4 fitxers (`src/**/*.test.tsx`).
+- **39 proves unitàries** en 6 fitxers (`src/**/*.test.tsx`), inclòs `AdminDashboard.test.tsx`.
 - **11 proves E2E** en 3 fitxers (`e2e/*.spec.ts`) contra el backend PHP.
 
 ---
@@ -88,13 +90,17 @@ L'equip no té permisos d'administrador. Tot està instal·lat **per usuari**:
 Particularitats que afecten les comandes:
 
 1. **PowerShell bloqueja `npm.ps1`** (ExecutionPolicy `Restricted`). Usa `npm.cmd run …` o Git Bash.
-2. **Vitest necessita `--configLoader native`** perquè Vite, en carregar la configuració, executa
-   `net use` i falla amb `EPERM` en entorns confinats. Ja està dins dels scripts `test`/`test:watch`.
+2. **Vitest i el build necessiten `--configLoader native`** perquè Vite, en carregar la configuració,
+   executa `net use` i falla amb `EPERM` en entorns confinats. Vitest ja el porta als scripts; per
+   compilar a mà: `node node_modules/vite/bin/vite.js build --mode public --configLoader native`.
 3. **El pool `threads` és obligatori** (els workers `forks` no arrenquen en aquest entorn).
-4. **Comandes que fan `spawn`** (`npm install`, `vite build`, `playwright test`) fallen amb `EPERM`
-   dins del sandbox de l'agent; s'han d'executar amb permisos complets. En un terminal normal
-   funcionen sense res.
-5. `npm run clean` usa `rm -rf`, que no existeix a `cmd`/PowerShell. No l'usis; esborra `dist/` a mà.
+4. **Comandes que fan `spawn`** (`npm install`, `playwright test`) fallen amb `EPERM` dins del
+   sandbox de l'agent; s'han d'executar amb permisos complets. En un terminal normal funcionen sense
+   res.
+5. **`php -S` pot fallar amb `Cannot create mutex (error 5)`** dins d'alguns sandbox: aleshores no es
+   poden executar els E2E ni provar l'aplicació en local des de dins de l'agent. El PHP de línia de
+   comandes sí que funciona.
+6. `npm run clean` usa `rm -rf`, que no existeix a `cmd`/PowerShell. No l'usis; esborra `dist/` a mà.
 
 ---
 
@@ -126,19 +132,27 @@ src/components/admin/ ...... capa privada (CRP)
                               automatitzacions, estructura Sheets
 ```
 
+L'inventari del panell és un **CRUD complet** de materials: alta, edició i baixa, amb codi automàtic
+(`MAT-007`, `MAQ-005`), bloqueig de codis duplicats, estat **Esborrany** per a allò que encara no es
+vol publicar, pujada d'imatge (JPG/PNG/WebP, màxim 3 MB) i confirmació visible en desar. Només són
+obligatoris el codi, el tipus, el nom, l'àmbit i la foto.
+
 Fitxers de suport:
 
 - `src/types/crp.ts` — tipus del domini (espejo de les columnes de Sheets).
 - `src/data/defaultData.ts` — 6 torns, 10 materials, 5 reserves d'exemple.
+- `src/data/contacte.ts` — bústia oficial del CRP (`crp-martorell@xtec.cat`).
 - `src/test/` — setup de Vitest i helper `renderWithCrp`.
 - `e2e/` — proves Playwright.
 - `vitest.config.ts`, `playwright.config.ts` — configuració de les suites.
+- `server/public/uploads/` — imatges pujades (no es versionen; `.htaccess` impedeix executar codi).
 
 ### Estat i accions (`CrpContext`)
 
 `materials`, `torns`, `reserves`, `notificacions`, `carregant`, `error`, `autenticat` i
-`crearReserva`, `validarReserva`, `desarMaterial`, `eliminarMaterial`, `executarRecordatoris`,
-`exportarCsv`, `login`, `logout`, `recarregar`, `getDisponibilitatMaterialTorn`.
+`crearReserva`, `validarReserva`, `desarMaterial`, `eliminarMaterial`, `pujarImatge`,
+`executarRecordatoris`, `exportarCsv`, `login`, `logout`, `recarregar`,
+`getDisponibilitatMaterialTorn`.
 
 Totes les accions són **asíncrones** i passen per un `CrpRepository`:
 `LocalRepository` (tests, dades a memòria), `HttpRepository` (producció, `/api/...`).
@@ -153,17 +167,24 @@ La persistència real és al servidor: `server/` amb PDO (MySQL o SQLite).
 | `Material` | `id`, `nom`, `tipus`, `ambit`, `urlImatge`, `descripcio`, `contingutMaleta`, `urlGuiaDrive`, `modelPrestec`, `estatGeneral`, `mostraContingut?`, `mostraGuia?` | Pestanya `Materials` (A–J) |
 | `TornPedagogic` | `id` T-01…T-06, `nom`, `dataInici`, `dataFinal`, ISO | Pestanya `Torns_Pedagogics` |
 | `Reserva` | `idReserva`, `idMaterial`, `tipus`, `tornAssignat` o dates de setmana, dades personals, `estatReserva`, `dataHoraRecollida`, `dataRetornPrevista` | Pestanya `Disponibilitat_i_Reserves` (A–N) |
-| `NotificacioEmail` | `id`, `dataHora`, `tipus`, `destinatari`, `assumpte`, `cos`, `idReserva` | Registre de correus (simulació de `MailApp`) |
+| `NotificacioEmail` | `id`, `dataHora`, `tipus`, `destinatari`, `copia?`, `assumpte`, `cos`, `idReserva` | Registre de correus (simulació de `MailApp`) |
 
 Regles que cal respectar en qualsevol canvi:
 
 - **Un material només pot tenir una reserva activa per torn.** `getDisponibilitatMaterialTorn`
   considera ocupats els estats `Concedida` **i** `Pendent de Validació` (les `Denegada` i
   `Finalitzada` alliberen el torn).
-- **Estats**: `Pendent de Validació` → `Concedida` \| `Denegada`; `Concedida` → `Finalitzada`.
-- **Correus simulats**: en crear una reserva s'afegeix un `avis_crp`; en concedir, un
-  `aprovacio_usuari` amb la data de recollida; en denegar, un `denegacio_usuari`; el trigger diari
-  afegeix `recordatori_retorn` quan falten ≤ 2 dies per al retorn.
+- **Estats de reserva**: `Pendent de Validació` → `Concedida` \| `Denegada`; `Concedida` →
+  `Finalitzada`.
+- **Estats de material**: `Actiu`, `En Manteniment`, `Baixa` i `Esborrany`. Els esborranys **no
+  surten mai** al catàleg públic: només existeixen al panell.
+- **Correus**: en crear una reserva s'envia un `avis_crp` a `crp-martorell@xtec.cat` **amb còpia al
+  docent**; en concedir, un `aprovacio_usuari` amb la data de recollida; en denegar, un
+  `denegacio_usuari`; el trigger diari afegeix `recordatori_retorn` quan falten ≤ 2 dies per al
+  retorn. En desenvolupament s'escriuen a `server/var/correus.log`.
+- **Imatges**: només JPG, PNG o WebP i **màxim 3 MB**; es desen a `uploads/` amb nom aleatori i es
+  guarden a `urlImatge` com a ruta relativa (`/uploads/mat-xxxx.png`). Mida recomanada 1200 × 800 px
+  (3:2).
 - **Dates**: `dataInici`/`dataFinal` en `DD/MM/YYYY` per a la UI; `dataIniciISO`/`dataFinalISO` i
   les dates de setmana en `YYYY-MM-DD` per a la lògica.
 - **El catàleg públic no pot mostrar mai** noms, centres ni correus.
@@ -195,6 +216,8 @@ Cobreixen la lògica del context i el comportament dels components públics:
 - `src/components/public/PublicCatalog.test.tsx` — cerca, filtre per tipus, estat buit.
 - `src/components/public/MaterialCard.test.tsx` — tira de torns, contingut desplegable, bloqueig.
 - `src/components/public/ReservationModal.test.tsx` — validació i creació amb codi.
+- `src/components/admin/AdminDashboard.test.tsx` — alta de material, pujada d'imatge (amb
+  `URL.createObjectURL` simulat), confirmació en desar i camps obligatoris.
 
 Per escriure'n de nous:
 
@@ -252,6 +275,10 @@ Repositori **trunk-based**: es treballa sobre `main` amb commits petits i atòmi
    directe): restes de la plantilla d'AI Studio.
 5. `tsconfig.json` no té `strict`. Activar-lo implicarà correccions.
 6. Els modals no atrapen el focus ni es tanquen amb `Escape`.
+7. **Imatges en desplegament**: `uploads/` ha de tenir permisos d'escriptura (`775`) al hosting; si
+   no, la pujada falla amb un error visible al formulari.
+8. **Esborrar una imatge** del disc no s'esborra en desar un altre fitxer: les imatges òrfenes s'han
+   de netejar a mà (no hi ha purga automàtica).
 
 ## 11. Full de ruta suggerit
 
@@ -262,6 +289,8 @@ Repositori **trunk-based**: es treballa sobre `main` amb commits petits i atòmi
 
 ## 12. Documentació relacionada
 
-- [`documentacion.md`](documentacion.md) — arquitectura objectiu per executar l'aplicació amb Google
-  Apps Script + Sheets + MailApp: dues apps (pública i privada), contracte de dades, JSONP,
-  `google.script.run`, panys, correus, RGPD, fases de migració i estimació.
+- [`documentacion.md`](documentacion.md) — arquitectura del projecte: estat implementat
+  (React + PHP + MySQL: API, model de dades, correu, imatges, RGPD) i, a continuació, el disseny
+  original amb Google Apps Script + Sheets + MailApp conservat com a alternativa.
+- [`desplegament.md`](desplegament.md) — guia de publicació a Hetzner per FTP (MySQL, `config.php`,
+  permisos, `uploads/`, correu).

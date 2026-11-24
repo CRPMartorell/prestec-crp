@@ -1,34 +1,138 @@
-# Arquitectura: Préstec CRP sobre Google Apps Script
+# Arquitectura: Préstec CRP Baix Llobregat VII
 
-> Document de disseny. Explica com executar l'aplicació amb **Google Apps Script + Google Sheets +
-> MailApp** **sense renunciar a la interfície React actual**, dividint el producte en una
-> **aplicació pública** (catàleg anònim) i una **aplicació privada** (gestió interna del CRP).
+> Document d'arquitectura del catàleg de préstec de recursos pedagògics i maquinària del Centre de
+> Recursos Pedagògics.
 >
-> Estat: **part pública desplegada i separada del panell**; el backend d'Apps Script encara no
-> existeix. Última revisió: novembre de 2026.
+> **Estat (novembre 2026): implementat amb React + PHP + MySQL.** La **Part I** descriu el que hi ha
+> construït i com funciona. La **Part II** conserva el disseny original amb **Google Apps Script +
+> Sheets + MailApp**, que ja no és la via principal sinó una alternativa documentada.
 
----
-
-## Estat del projecte (novembre 2026)
+## Estat del projecte
 
 | Peça | Estat | Detall |
 | --- | --- | --- |
-| Catàleg públic (UI) | ✅ Fet | `index.html` → `AppPublic`, desplegat a `crpmartorell.github.io/prestec-crp/` |
-| Separació públic / privat | ✅ Fet | `admin.html` → `AppPrivate`; `build:public` / `build:private`; `check:bundle` |
-| Publicació automàtica | ✅ Fet | GitHub Actions: lint + 22 tests + build públic + guardia + deploy |
-| Panell intern (UI) | ✅ Fet (codi) | `AdminDashboard`, encara recolzat en `localStorage` |
-| Desplegament del panell | ⏳ Pendent | HtmlService amb `access: DOMAIN` (necessita el backend) |
-| Backend del catàleg | ⏳ Pendent | `Code.gs` públic: `doGet`, projecció de camps, JSONP |
-| Backend de gestió | ⏳ Pendent | CRUD, `LockService`, IDs, auditoria |
-| Correus i recordatoris | ⏳ Pendent | `MailApp` + trigger diari |
-| Estat compartit | ⏳ Pendent | `CrpRepository` + context asíncron (vegeu §18) |
-| Entorn de desenvolupament | ⏳ Pendent | compte personal + `clasp` (vegeu §19) |
-| Proves | ✅ 22 unitàries + 11 E2E | `npm run verify` |
-
-> «Pendent» vol dir **codi per escriure**, no servei per contractar: Apps Script, Sheets i Gmail ja
-> existeixen al Workspace del centre. Les fases concretes són a §12.
+| Catàleg públic | ✅ Fet | `index.html` → `AppPublic`; anònim, només mostra `Lliure`/`Ocupat` |
+| Panell intern | ✅ Fet | `admin.html` → `AppPrivate`; 5 pestanyes, sessió PHP |
+| Autenticació | ✅ Fet | taula `usuaris` amb `password_hash`; token CSRF a les mutacions |
+| API | ✅ Fet | `server/public/index.php`; catàleg, reserves, materials, imatges, CSV, recordatoris |
+| Base de dades | ✅ Fet | MySQL a producció / SQLite en local; esquema i dades d'exemple |
+| CRUD de materials | ✅ Fet | alta, edició, baixa, estat esborrany i imatge de portada |
+| Correus | ✅ Simulat | `server/var/correus.log` en desenvolupament; `mail()` pendent de provar a Hetzner |
+| Desplegament | ⏳ Pendent | Hetzner Webhosting S per FTP (vegeu [`desplegament.md`](desplegament.md)) |
+| Proves | ✅ 39 unitàries + 11 E2E | `npm run verify` |
 
 ---
+
+# Part I · Implementació actual (React + PHP + MySQL)
+
+## Stack
+
+| Peça | Versió | Notes |
+| --- | --- | --- |
+| React + TypeScript | 19 / 7 | Dues pàgines (`index.html`, `admin.html`), sense router |
+| Vite | 8 | `@vitejs/plugin-react`, Tailwind 4 via `@tailwindcss/vite` |
+| PHP | 8.2+ | API amb PDO, sense framework ni Composer |
+| MySQL | 5.7/8 | Producció; SQLite en desenvolupament |
+| Vitest + Playwright | 5 / 1.64 | 39 proves unitàries i 11 E2E |
+
+El desenvolupament es fa en un compte personal i la producció viurà al compte del centre.
+
+## Estructura del repositori
+
+```
+index.html, admin.html ...... punts d'entrada de les dues aplicacions
+src/ ........................ UI React (public/, admin/, context/, data/, types/)
+server/
+  public/index.php .......... única entrada de l'API (PHP)
+  src/ ...................... Crp (negoci), Db (PDO), Auth, Correu, Imatges, Http, Seed
+  sql/schema.mysql.sql ...... estructura per a MySQL
+  sql/schema.sqlite.sql ..... estructura per a SQLite
+  sql/seed.mysql.sql ........ dades d'exemple per importar a phpMyAdmin
+  data/seed.json ............ dades d'exemple en JSON (font única)
+  tools/install.php ......... instal·lació per CLI
+  config/ ................... configuració (config.php no es versiona)
+  var/ ...................... base SQLite i log de correus (no es versiona)
+  public/uploads/ ........... imatges pujades (no es versiona; .htaccess protegeix la carpeta)
+scripts/ .................... dev, doctor, prep-deploy, gen-seed-sql, check-public-bundle
+e2e/ ........................ proves Playwright
+```
+
+## API
+
+| Mètode | Ruta | Accés | Funció |
+| --- | --- | --- | --- |
+| `GET` | `/api/cataleg` | públic | Materials, torns i ocupació (sense dades personals) |
+| `GET` | `/api/sessio` | públic | Estat de la sessió i token CSRF |
+| `POST` | `/api/login` · `/api/logout` | públic | Entrada i sortida del panell |
+| `POST` | `/api/reserves` | públic | Nova sol·licitud (valida torn o setmana) |
+| `GET` | `/api/panell` | sessió | Reserves, materials, torns, notificacions, registre |
+| `POST` | `/api/reserves/{id}/validar` | sessió | Concedir, denegar o finalitzar |
+| `POST` | `/api/materials` | sessió | Alta o edició d'un material |
+| `DELETE` | `/api/materials/{id}` | sessió | Baixa d'un material |
+| `POST` | `/api/materials/imatge` | sessió | Pujada d'imatge (multipart) |
+| `POST` | `/api/recordatoris` | sessió | Executa el trigger de recordatoris |
+| `GET` | `/api/export.csv` | sessió | Exportació per a Google Sheets |
+
+Les mutacions exigeixen la capçalera `X-CSRF`. Els errors tornen `{"ok":false,"error":"..."}` amb
+codi 4xx/5xx.
+
+## Model de dades
+
+| Taula | Camps principals | Notes |
+| --- | --- | --- |
+| `materials` | `id`, `nom`, `tipus`, `ambit`, `url_imatge`, `descripcio`, `contingut`, `url_guia`, `model_prestec`, `estat_general`, `mostra_contingut`, `mostra_guia` | `estat_general`: `Actiu`, `En Manteniment`, `Baixa`, `Esborrany` |
+| `torns` | `id` T-01…T-06, `nom`, dates en text i ISO | 6 torns tancats del curs |
+| `reserves` | `id_reserva`, `id_material`, `tipus`, `torn_assignat`, dates de setmana, dades del docent, `estat`, `data_hora_recollida`, dates de creació i retorn | **Sense telèfon** (minimització de dades) |
+| `notificacions` | `id`, `data_hora`, `tipus`, `destinatari`, `copia`, `assumpte`, `cos`, `id_reserva` | Registre de tot el correu enviat |
+| `usuaris` | `correu`, `nom`, `hash`, `actiu` | Personal del CRP |
+| `registre` | `id`, `data_hora`, `correu`, `accio`, `id_reserva`, `detall` | Auditoria |
+| `config` | `clau`, `valor` | Comptador de reserves, etc. |
+
+## Regles de negoci
+
+- **Dos models de préstec.** Recursos pedagògics: 6 torns tancats. Maquinària: setmanes naturals,
+  **7 dies**, i el període no pot començar ni acabar en dissabte o diumenge.
+- **Disponibilitat.** Una reserva activa per material i torn. Compten com a ocupats
+  `Pendent de Validació` i `Concedida`; `Denegada` i `Finalitzada` alliberen.
+- **Estats de reserva.** `Pendent de Validació` → `Concedida` o `Denegada`; `Concedida` →
+  `Finalitzada`.
+- **Esborranys.** Un material amb estat `Esborrany` no surt mai al catàleg públic.
+- **Seccions opcionals de la fitxa.** `mostra_contingut` i `mostra_guia` decideixen si es mostren el
+  desplegable «Veure contingut de la maleta» i l'enllaç al dossier.
+- **Imatges.** JPG, PNG o WebP, màxim 3 MB; es desen a `uploads/` amb nom aleatori i la fitxa en
+  guarda la ruta relativa. Mida recomanada 1200 × 800 px (3:2).
+
+## Correu
+
+- En crear una reserva s'envia un avís a **`crp-martorell@xtec.cat`** amb **còpia al docent**.
+- En concedir s'envia l'acord de recollida al docent; en denegar, l'avís de denegació; el trigger
+  diari recorda els retorns quan falten 2 dies o menys.
+- Transport configurable: `log` (desenvolupament, escriu a `server/var/correus.log`) o `mail`
+  (hosting). L'adreça del CRP es canvia amb `CRP_CORREU`.
+
+## Seguretat i RGPD
+
+- El catàleg públic no conté cap dada personal: ni noms, ni centres, ni correus.
+- El panell exigeix sessió; la contrasenya s'emmagatzema amb `password_hash`.
+- Les mutacions requereixen `X-CSRF`; les respostes porten `X-Content-Type-Options: nosniff`.
+- La carpeta `uploads/` no pot executar codi (`.htaccess`) i no es versiona.
+- Les dades personals es limiten al necessari: docent, centre, municipi, correu i observacions.
+
+## Proves
+
+- **Unitàries (Vitest):** context, catàleg, fitxa, formulari de reserva i panell d'inventari.
+- **E2E (Playwright):** catàleg anònim, flux docent → CRP i panell intern, contra el backend PHP.
+- `npm run verify` encadena `lint`, proves unitàries, build públic i comprovació que el bundle
+  públic no conté codi del panell.
+
+---
+
+# Part II · Disseny original amb Google Apps Script
+
+> Aquestes seccions es conserven com a referència i alternativa si algun dia es vol executar el
+> mateix producte sobre Google Workspace (Sheets + MailApp). **No és el que hi ha implementat.**
+> Alguns detalls (nombre de proves, telèfon de contacte, panells) corresponen al disseny original i
+> poden no coincidir amb el codi actual: la font de veritat és la Part I i [`AGENTS.md`](AGENTS.md).
 
 ## 1. Objectiu i abast
 
