@@ -63,4 +63,20 @@ final class Http
         }
         return $valor;
     }
+
+    /** Camp de text que pot quedar buit (descripcions, observacions…). */
+    public static function textOpcional(mixed $valor, string $camp, int $max = 500): string
+    {
+        if ($valor === null) {
+            return '';
+        }
+        if (!is_string($valor)) {
+            Http::error('El camp ' . $camp . ' ha de ser text', 422);
+        }
+        $valor = trim($valor);
+        if (mb_strlen($valor) > $max) {
+            Http::error('El camp ' . $camp . ' és massa llarg', 422);
+        }
+        return $valor;
+    }
 }

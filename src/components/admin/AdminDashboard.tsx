@@ -55,6 +55,7 @@ export const AdminDashboard: React.FC = () => {
   const [isNewMaterial, setIsNewMaterial] = useState(false);
   const [errorMaterial, setErrorMaterial] = useState<string | null>(null);
   const [missatgeMaterial, setMissatgeMaterial] = useState<string | null>(null);
+  const [errorsMaterial, setErrorsMaterial] = useState<Record<string, string>>({});
   const [pujantImatge, setPujantImatge] = useState(false);
 
   // Trigger feedback
@@ -118,21 +119,23 @@ export const AdminDashboard: React.FC = () => {
       return;
     }
 
-    // Validació pròpia: el formulari és noValidate perquè qualsevol error es
-    // vegi dins del modal i no pas com un globus del navegador que passa
-    // desapercebut.
-    const faltes: string[] = [];
-    if (!material.id.trim()) faltes.push('el codi');
-    if (!material.nom.trim()) faltes.push('el nom');
-    if (!material.descripcio.trim()) faltes.push('la descripció');
-    if (!material.contingutMaleta.trim()) faltes.push('el contingut');
-    if (!material.urlImatge.trim()) faltes.push('la imatge');
+    // Només són obligatoris el codi, el tipus, el nom, l'àmbit i la foto.
+    const errors: Record<string, string> = {};
+    if (!material.id.trim()) errors.id = 'El codi és obligatori.';
+    if (!material.tipus) errors.tipus = 'Cal triar un tipus.';
+    if (!material.nom.trim()) errors.nom = 'El nom és obligatori.';
+    if (!material.ambit.trim()) errors.ambit = "Cal triar un àmbit temàtic.";
+    if (!material.urlImatge.trim()) {
+      errors.urlImatge = 'Cal una imatge: puja un fitxer o enganxa un enllaç.';
+    }
 
-    if (faltes.length > 0) {
-      setErrorMaterial(`Falten camps obligatoris: ${faltes.join(', ')}.`);
+    if (Object.keys(errors).length > 0) {
+      setErrorsMaterial(errors);
+      setErrorMaterial('Revisa els camps marcats en vermell.');
       return;
     }
 
+    setErrorsMaterial({});
     setErrorMaterial(null);
     try {
       await desarMaterial(material);
@@ -983,7 +986,8 @@ function enviarRecordatoriDevolucio() {
               {isNewMaterial ? 'Afegir Nou Material al Catàleg' : `Editar Material ${editingMaterial.id}`}
             </h3>
             <p className="text-xs text-slate-500 mb-4">
-              Camps corresponents a les columnes A-J de la pestanya <code>Materials</code>.
+              Camps corresponents a les columnes A-J de la pestanya <code>Materials</code>. Els
+              obligatoris són el codi, el tipus, el nom, l'àmbit i la foto.
             </p>
 
             <form onSubmit={handleSaveMaterial} noValidate className="space-y-4">
@@ -993,10 +997,19 @@ function enviarRecordatoriDevolucio() {
                   <input
                     type="text"
                     value={editingMaterial.id}
-                    onChange={(e) => setEditingMaterial({ ...editingMaterial, id: e.target.value })}
+                    onChange={(e) => {
+                      setEditingMaterial({ ...editingMaterial, id: e.target.value });
+                      setErrorsMaterial(prev => ({ ...prev, id: '' }));
+                    }}
                     required
-                    className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden font-mono"
+                    aria-invalid={!!errorsMaterial.id}
+                    className={`w-full px-3 py-1.5 text-xs border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden font-mono ${
+                      errorsMaterial.id ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200'
+                    }`}
                   />
+                  {errorsMaterial.id && (
+                    <p className="text-[11px] text-rose-600 font-semibold mt-1">{errorsMaterial.id}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Tipus:</label>
@@ -1023,11 +1036,20 @@ function enviarRecordatoriDevolucio() {
                 <input
                   type="text"
                   value={editingMaterial.nom}
-                  onChange={(e) => setEditingMaterial({ ...editingMaterial, nom: e.target.value })}
+                  onChange={(e) => {
+                    setEditingMaterial({ ...editingMaterial, nom: e.target.value });
+                    setErrorsMaterial(prev => ({ ...prev, nom: '' }));
+                  }}
                   required
+                  aria-invalid={!!errorsMaterial.nom}
                   placeholder="Ex: Maleta de Robòtica Bee-Bot"
-                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                  className={`w-full px-3 py-2 text-xs border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden ${
+                    errorsMaterial.nom ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200'
+                  }`}
                 />
+                {errorsMaterial.nom && (
+                  <p className="text-[11px] text-rose-600 font-semibold mt-1">{errorsMaterial.nom}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1109,28 +1131,37 @@ function enviarRecordatoriDevolucio() {
                   onChange={(e) => setEditingMaterial({ ...editingMaterial, urlImatge: e.target.value })}
                   required
                   placeholder="https://... o /uploads/..."
-                  className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                  aria-invalid={!!errorsMaterial.urlImatge}
+                  className={`w-full px-3 py-1.5 text-xs border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden ${
+                    errorsMaterial.urlImatge ? 'border-rose-400 bg-rose-50/40' : 'border-slate-200'
+                  }`}
                 />
+                {errorsMaterial.urlImatge && (
+                  <p className="text-[11px] text-rose-600 font-semibold mt-1">{errorsMaterial.urlImatge}</p>
+                )}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Descripció Pedagògica:</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Descripció Pedagògica: <span className="font-normal text-slate-400">(opcional)</span>
+                </label>
                 <textarea
                   rows={2}
                   value={editingMaterial.descripcio}
                   onChange={(e) => setEditingMaterial({ ...editingMaterial, descripcio: e.target.value })}
-                  required
                   className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Contingut Detallat de la Maleta o Equip:</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Contingut Detallat de la Maleta o Equip:{' '}
+                  <span className="font-normal text-slate-400">(opcional)</span>
+                </label>
                 <textarea
                   rows={2}
                   value={editingMaterial.contingutMaleta}
                   onChange={(e) => setEditingMaterial({ ...editingMaterial, contingutMaleta: e.target.value })}
-                  required
                   disabled={editingMaterial.mostraContingut === false}
                   placeholder="Llistat detallat de peces, guies i components..."
                   className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden disabled:bg-slate-100 disabled:text-slate-400"
@@ -1147,13 +1178,17 @@ function enviarRecordatoriDevolucio() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">URL Guia didàctica / Google Drive:</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  URL Guia didàctica / Google Drive:{' '}
+                  <span className="font-normal text-slate-400">(opcional)</span>
+                </label>
                 <input
-                  type="url"
+                  type="text"
+                  inputMode="url"
                   value={editingMaterial.urlGuiaDrive}
                   onChange={(e) => setEditingMaterial({ ...editingMaterial, urlGuiaDrive: e.target.value })}
-                  required
                   disabled={editingMaterial.mostraGuia === false}
+                  placeholder="https://drive.google.com/..."
                   className="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-hidden disabled:bg-slate-100 disabled:text-slate-400"
                 />
                 <label className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">

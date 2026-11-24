@@ -58,14 +58,32 @@ describe('AdminDashboard · inventari', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/creat correctament/);
   });
 
-  it('avisa dels camps que falten en lloc de no fer res', async () => {
+  it('marca el camp que falta i no desa res', async () => {
     const user = userEvent.setup();
-    renderWithCrp(<AdminDashboard />);
+    const { crp } = renderWithCrp(<AdminDashboard />);
 
     await user.click(await screen.findByRole('button', { name: /Inventari de Materials/ }));
+    await screen.findByText('MAT-001');
+    const abans = crp.materials.length;
+
     await user.click(screen.getByRole('button', { name: /Afegir Nou Material/ }));
     await user.click(screen.getByRole('button', { name: /Guardar Material/ }));
 
-    expect(screen.getByRole('alert')).toHaveTextContent(/Falten camps obligatoris/);
+    expect(screen.getByRole('alert')).toHaveTextContent(/Revisa els camps marcats/);
+    expect(screen.getByText('El nom és obligatori.')).toBeInTheDocument();
+    expect(crp.materials).toHaveLength(abans);
+  });
+
+  it('desa encara que la descripció i el contingut quedin buits', async () => {
+    const user = userEvent.setup();
+    const { crp } = renderWithCrp(<AdminDashboard />);
+
+    await user.click(await screen.findByRole('button', { name: /Inventari de Materials/ }));
+    await user.click(screen.getByRole('button', { name: /Afegir Nou Material/ }));
+    await user.type(screen.getByPlaceholderText('Ex: Maleta de Robòtica Bee-Bot'), 'Sense detalls');
+    await user.click(screen.getByRole('button', { name: /Guardar Material/ }));
+
+    expect(screen.getByRole('status')).toHaveTextContent(/creat correctament/);
+    expect(crp.materials.some(m => m.nom === 'Sense detalls')).toBe(true);
   });
 });
