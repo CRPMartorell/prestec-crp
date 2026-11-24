@@ -22,7 +22,7 @@ return [
     ],
 
     // Correu del CRP i remitent.
-    'correu_crp' => getenv('CRP_CORREU') ?: 'crp@example.cat',
+    'correu_crp' => getenv('CRP_CORREU') ?: 'crp-martorell@xtec.cat',
     'remitent' => getenv('CRP_REMITENT') ?: 'no-reply@example.cat',
 
     // 'log' desa els correus a var/correus.log; 'mail' fa servir mail().

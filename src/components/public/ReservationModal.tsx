@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Material, TornPedagogic } from '../../types/crp';
 import { useCrp } from '../../context/CrpContext';
 import { calculaDataFi, DIES_PRESTEC_MAQUINARIA, esCapDeSetmana } from '../../data/periodes';
+import { CORREU_CRP } from '../../data/contacte';
 import { X, Calendar, User, School, MapPin, Mail, Phone, MessageSquare, CheckCircle, Shield, AlertCircle, ArrowRight } from 'lucide-react';
 
 interface ReservationModalProps {
@@ -141,11 +142,16 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({ material, on
               <p className="text-sm font-semibold text-indigo-700 bg-indigo-50 inline-block px-3 py-1.5 rounded-lg border border-indigo-200 mb-4 font-mono">
                 Codi de Reserva: {reservaConfirmada.idReserva}
               </p>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-6">
+                <p className="text-sm font-bold text-emerald-900">
+                  Hem rebut la teva sol·licitud, en breu et confirmarem l’assignació.
+                </p>
+              </div>
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left text-sm text-slate-700 mb-6 space-y-2">
                 <p className="font-semibold text-slate-900">Següents passos segons el protocol del CRP:</p>
                 <div className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-indigo-150 text-indigo-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
-                  <span>S'ha enviat una notificació automàtica a la bústia oficial del CRP (<code>crp@centre-recursos.cat</code>).</span>
+                  <span>S'ha enviat una notificació automàtica a la bústia oficial del CRP (<code>{CORREU_CRP}</code>).</span>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-indigo-150 text-indigo-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>

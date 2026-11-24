@@ -53,6 +53,10 @@ describe('ReservationModal', () => {
     await user.click(screen.getByRole('button', { name: /Enviar Sol·licitud de Préstec/ }));
 
     expect(await screen.findByText('Sol·licitud Enregistrada!')).toBeInTheDocument();
+    expect(
+      screen.getByText('Hem rebut la teva sol·licitud, en breu et confirmarem l’assignació.')
+    ).toBeInTheDocument();
+    expect(screen.getByText(/crp-martorell@xtec\.cat/)).toBeInTheDocument();
     expect(screen.getByText(/RES-\d{4}-\d{3}/)).toBeInTheDocument();
     expect(crp.reserves).toHaveLength(6);
     expect(crp.reserves[0]).toMatchObject({
