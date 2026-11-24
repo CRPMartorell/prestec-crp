@@ -52,6 +52,7 @@ export const AdminDashboard: React.FC = () => {
   // Modal for adding / editing material
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
   const [isNewMaterial, setIsNewMaterial] = useState(false);
+  const [errorMaterial, setErrorMaterial] = useState<string | null>(null);
 
   // Trigger feedback
   const [triggerResult, setTriggerResult] = useState<string | null>(null);
@@ -88,9 +89,29 @@ export const AdminDashboard: React.FC = () => {
   const handleSaveMaterial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMaterial) return;
+
     const material = editingMaterial;
+
+    // En crear, no deixem trepitjar un material existent amb el mateix codi.
+    if (isNewMaterial && materials.some(m => m.id === material.id)) {
+      setErrorMaterial(`Ja existeix un material amb el codi ${material.id}. Tria'n un altre.`);
+      return;
+    }
+
+    setErrorMaterial(null);
     setEditingMaterial(null);
     await desarMaterial(material);
+  };
+
+  /** Codi següent lliure per al tipus indicat: MAT-007, MAQ-005… */
+  const seguentCodi = (tipus: Material['tipus']): string => {
+    const prefix = tipus === 'Recurs Pedagògic' ? 'MAT' : 'MAQ';
+    const numeros = materials
+      .filter(m => m.id.startsWith(`${prefix}-`))
+      .map(m => Number.parseInt(m.id.split('-')[1] ?? '', 10))
+      .filter(n => Number.isFinite(n));
+    const seguent = (numeros.length > 0 ? Math.max(...numeros) : 0) + 1;
+    return `${prefix}-${String(seguent).padStart(3, '0')}`;
   };
 
   const handleRunDailyTrigger = async () => {
@@ -464,11 +485,12 @@ function enviarRecordatoriDevolucio() {
             <button
               onClick={() => {
                 setIsNewMaterial(true);
+                setErrorMaterial(null);
                 setEditingMaterial({
-                  id: `MAT-00${materials.length + 1}`,
+                  id: seguentCodi('Recurs Pedagògic'),
                   nom: '',
                   tipus: 'Recurs Pedagògic',
-                  ambit: 'Ciències Naturals',
+                  ambit: 'STEAM',
                   urlImatge: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80',
                   descripcio: '',
                   contingutMaleta: '',
@@ -548,6 +570,7 @@ function enviarRecordatoriDevolucio() {
                           <button
                             onClick={() => {
                               setIsNewMaterial(false);
+                              setErrorMaterial(null);
                               setEditingMaterial(mat);
                             }}
                             className="p-1.5 text-slate-500 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors"
@@ -1030,6 +1053,12 @@ function enviarRecordatoriDevolucio() {
                   Mostrar l'enllaç al dossier a la fitxa pública
                 </label>
               </div>
+
+              {errorMaterial && (
+                <p role="alert" className="text-xs font-semibold text-rose-600">
+                  {errorMaterial}
+                </p>
+              )}
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <button
